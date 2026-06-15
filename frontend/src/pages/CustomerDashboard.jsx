@@ -3,16 +3,39 @@ import { API_URL } from '../config/api';
 import logo from '../../assets/logo.jpg';
 
 // ── Product Card ───────────────────────────────────────────────
-// ── Compact Product Card ───────────────────────────────────────────
-function ProductCard({ product, onAddToCart }) {
-  const [quantity, setQuantity] = useState(1);
-  const [added, setAdded] = useState(false);
+function ProductCard({ product, onAddToCart, onRemoveFromCart, cartQuantity }) {
+  const [quantity, setQuantity] = useState(cartQuantity || 0);
 
-  const handleAdd = () => {
-    onAddToCart(product, quantity);
-    setQuantity(1);
-    setAdded(true);
-    setTimeout(() => setAdded(false), 1200);
+  useEffect(() => {
+    setQuantity(cartQuantity || 0);
+  }, [cartQuantity]);
+
+  const handleToggleAdd = () => {
+    if (quantity === 0) {
+      setQuantity(1);
+      onAddToCart(product, 1);
+    } else {
+      setQuantity(0);
+      onRemoveFromCart(product.id);
+    }
+  };
+
+  const handleMinus = () => {
+    if (quantity > 0) {
+      const newQty = quantity - 1;
+      setQuantity(newQty);
+      if (newQty === 0) {
+        onRemoveFromCart(product.id);
+      } else {
+        onAddToCart(product, newQty);
+      }
+    }
+  };
+
+  const handlePlus = () => {
+    const newQty = quantity + 1;
+    setQuantity(newQty);
+    onAddToCart(product, newQty);
   };
 
   return (
@@ -23,7 +46,6 @@ function ProductCard({ product, onAddToCart }) {
       <div className="w-28 h-28 min-w-[112px] sm:w-full sm:h-32 flex items-center justify-center relative overflow-hidden flex-shrink-0"
         style={{ background: 'linear-gradient(148deg, #fdf9f4 0%, #f5ede0 100%)' }}>
         <span className="text-4xl transform group-hover:scale-105 transition-transform duration-200 select-none">📦</span>
-   
       </div>
 
       {/* Compact Body */}
@@ -32,43 +54,37 @@ function ProductCard({ product, onAddToCart }) {
           <h3 className="text-xs font-bold text-brand-900 leading-tight line-clamp-2 min-h-[32px] mb-0.5">
             {product.name}
           </h3>
-        
         </div>
 
         <div className="flex flex-col gap-1.5">
           <p className="text-lg font-black text-brand-500 tracking-tight flex items-baseline gap-0.5">
-        
           </p>
 
           {/* Micro Quantity + Add Actions */}
           <div className="flex items-center gap-1.5 w-full">
             <div className="flex items-center border border-brand-200 rounded-lg overflow-hidden bg-brand-50 h-7 flex-shrink-0">
               <button
-                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                onClick={handleMinus}
                 className="w-6 h-full flex items-center justify-center text-brand-400 hover:text-brand-600
                   hover:bg-brand-100 transition-colors text-sm font-bold"
               >−</button>
-              <input
-                type="number"
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-7 text-center bg-transparent text-xs font-bold text-brand-900 border-x
-                  border-brand-200 focus:outline-none"
-              />
+              <span className="w-7 text-center bg-transparent text-xs font-bold text-brand-900 border-x border-brand-200">
+                {quantity}
+              </span>
               <button
-                onClick={() => setQuantity(q => q + 1)}
+                onClick={handlePlus}
                 className="w-6 h-full flex items-center justify-center text-brand-400 hover:text-brand-600
                   hover:bg-brand-100 transition-colors text-sm font-bold"
               >+</button>
             </div>
             
             <button
-              onClick={handleAdd}
+              onClick={handleToggleAdd}
               className={`flex-1 h-7 px-2 rounded-lg text-[11px] font-bold text-white transition-all duration-200 truncate ${
-                added ? 'bg-green-600' : 'bg-brand-500 hover:bg-brand-600'
+                quantity > 0 ? 'bg-green-600 hover:bg-green-700' : 'bg-brand-500 hover:bg-brand-600'
               }`}
             >
-              {added ? '✓ נוסף' : 'הוסף'}
+              {quantity > 0 ? '✓ נוסף' : 'הוסף'}
             </button>
           </div>
         </div>
@@ -299,12 +315,16 @@ export default function CustomerDashboard({ user, onLogout }) {
   const handleAddToCart = (product, quantity) => {
     setCart(prev => {
       const ex = prev.find(i => i.id === product.id);
-      if (ex) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i);
+      if (ex) {
+        return prev.map(i => i.id === product.id ? { ...i, quantity } : i);
+      }
       return [...prev, { ...product, quantity }];
     });
   };
 
-  const handleRemoveFromCart = (productId) => setCart(cart.filter(i => i.id !== productId));
+  const handleRemoveFromCart = (productId) => {
+    setCart(cart.filter(i => i.id !== productId));
+  };
 
   const handleUpdateQuantity = (productId, quantity) => {
     if (quantity <= 0) handleRemoveFromCart(productId);
@@ -312,60 +332,70 @@ export default function CustomerDashboard({ user, onLogout }) {
   };
 
   const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+  const getCartQuantity = (productId) => {
+    const item = cart.find(i => i.id === productId);
+    return item ? item.quantity : 0;
+  };
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf8f5] font-sans antialiased">
-      {/* Navbar */}
-      <header className="bg-white border-b border-brand-100 h-20 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
-        <div className="flex items-center gap-3">
-          <img src={logo} alt="לוגו" className="w-11 h-11 rounded-full object-cover border-2 border-brand-200 shadow-sm" />
-          <div className="flex flex-col">
-            <span className="text-base sm:text-lg font-black text-brand-900 tracking-tight leading-tight">ח.ס אלפי</span>
-            <span className="text-[11px] text-brand-400 font-medium hidden sm:inline">מערכת הזמנות דיגיטלית</span>
-          </div>
-        </div>
+      {/* Navbar - FLEX COLUMN */}
+      <header className="bg-white border-b border-brand-100 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
         
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowCart(true)}
-            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-brand-800
-              border border-brand-200 bg-brand-50 hover:bg-brand-100 active:scale-95 transition-all shadow-sm"
-          >
-            <span className="text-base">🛒</span>
-            <span className="hidden xs:inline">עגלת קניות</span>
-            {cartCount > 0 && (
-              <span className="bg-brand-500 text-white rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center text-[11px] font-black animate-pulse">
-                {cartCount}
-              </span>
-            )}
-          </button>
-          
-          <button onClick={onLogout}
-            className="px-4 py-2.5 border border-brand-200 rounded-xl text-xs font-bold
-              text-brand-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-all">
-            יציאה
-          </button>
+        {/* First Row: Logo, Search, Cart/Logout */}
+        <div className="flex items-center justify-between gap-4 px-4 sm:px-8 py-4">
+          {/* Logo */}
+          <div className="flex items-center gap-3 flex-shrink-0">
+            <img src={logo} alt="לוגו" className="w-11 h-11 rounded-full object-cover border-2 border-brand-200 shadow-sm" />
+            <div className="flex flex-col hidden sm:block">
+              <span className="text-base font-black text-brand-900 tracking-tight leading-tight">ח.ס אלפי</span>
+              <span className="text-[11px] text-brand-400 font-medium">מערכת הזמנות דיגיטלית</span>
+            </div>
+          </div>
+
+          {/* Search Bar - CENTERED */}
+          <div className="flex-1 max-w-sm mx-4">
+            <div className="relative">
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-300 text-base pointer-events-none">🔍</span>
+              <input
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="חפש..."
+                className="w-full pr-9 pl-3 py-2.5 border border-brand-200 rounded-xl text-xs bg-brand-50/50
+                  focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100
+                  transition-all placeholder:text-brand-300"
+              />
+            </div>
+          </div>
+
+          {/* Cart + Logout */}
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <button
+              onClick={() => setShowCart(true)}
+              className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs sm:text-sm font-bold text-brand-800
+                border border-brand-200 bg-brand-50 hover:bg-brand-100 active:scale-95 transition-all shadow-sm whitespace-nowrap"
+            >
+              <span className="text-base">🛒</span>
+              <span className="hidden sm:inline">עגלה</span>
+              {cartCount > 0 && (
+                <span className="bg-brand-500 text-white rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center text-[10px] font-black">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+            
+            <button onClick={onLogout}
+              className="px-3 py-2 border border-brand-200 rounded-xl text-xs font-bold
+                text-brand-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-all whitespace-nowrap">
+              יציאה
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-        
-        {/* Search Bar Block */}
-        <div className="bg-white rounded-2xl border border-brand-100 p-4 sm:p-6 shadow-sm">
-          <div className="relative max-w-2xl mx-auto">
-            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-300 text-lg pointer-events-none">🔍</span>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="חפש מוצרים, מותגים או פריטים..."
-              className="w-full pr-12 pl-4 py-3.5 border border-brand-200 rounded-2xl text-sm bg-brand-50/50
-                focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100
-                transition-all placeholder:text-brand-300 shadow-inner"
-            />
-          </div>
-        </div>
 
         {/* Floating / Sticky Carousel Category Strip */}
         {!searchTerm && (
@@ -391,7 +421,7 @@ export default function CustomerDashboard({ user, onLogout }) {
           </div>
         )}
 
-        {/* Responsive Flex/Fluid Grid Layout for Products */}
+        {/* Responsive Grid Layout for Products */}
         <div className="py-2">
           {loading ? (
             <div className="text-center py-24 text-brand-400 font-medium flex flex-col items-center gap-3">
@@ -407,7 +437,13 @@ export default function CustomerDashboard({ user, onLogout }) {
           ) : (
             <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4 sm:gap-6">
               {products.map(product => (
-                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+                <ProductCard 
+                  key={product.id} 
+                  product={product} 
+                  onAddToCart={handleAddToCart}
+                  onRemoveFromCart={handleRemoveFromCart}
+                  cartQuantity={getCartQuantity(product.id)}
+                />
               ))}
             </div>
           )}
