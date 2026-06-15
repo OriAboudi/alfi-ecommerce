@@ -25,10 +25,10 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // CORS Configuration
 app.use(cors({
-  origin: FRONTEND_URL,
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  origin: function(origin, callback) {
+    callback(null, true);  // ✅ Allow all origins
+  },
+  optionsSuccessStatus: 200  // ✅ Important!
 }));
 
 // Request Logging Middleware
