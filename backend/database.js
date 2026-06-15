@@ -1,38 +1,56 @@
 import sqlite3 from 'sqlite3';
-import { promisify } from 'util';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
+import os from 'os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, 'data');
-const DB_PATH = path.join(DATA_DIR, 'alfie.db');
 
-// Create data directory if it doesn't exist
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// For Vercel: use /tmp directory (writable)
+// For local: use ./data directory
+const isDevelopment = process.env.NODE_ENV !== 'production';
+
+let DB_PATH;
+
+if (isDevelopment) {
+  // Local development: use ./data folder
+  const DATA_DIR = path.join(__dirname, 'data');
+  DB_PATH = path.join(DATA_DIR, 'alfie.db');
+  
+  // Create data directory if it doesn't exist
+  if (!fs.existsSync(DATA_DIR)) {
+    fs.mkdirSync(DATA_DIR, { recursive: true });
+    console.log(`📁 Created data directory: ${DATA_DIR}`);
+  }
+} else {
+  // Production (Vercel): use /tmp directory (always writable)
+  DB_PATH = '/tmp/alfie.db';
+  console.log(`📁 Using Vercel temp directory: ${DB_PATH}`);
 }
 
-let db = null;
+let db;
 
-export function getDB() {
+export const getDB = () => {
   return db;
-}
+};
 
-export function initDatabase() {
+export const initDatabase = async () => {
   return new Promise((resolve, reject) => {
     db = new sqlite3.Database(DB_PATH, (err) => {
       if (err) {
-        console.error('Error opening database:', err);
+        console.error('❌ Database connection failed:', err);
         reject(err);
-      } else {
-        console.log('✅ Database connected');
-        createTables();
-        resolve(db);
+        return;
       }
+
+      console.log(`✅ Database connected: ${DB_PATH}`);
+
+      // Create tables if they don't exist
+      createTables();
+      resolve();
     });
   });
-}
+};
 
 function createTables() {
   db.serialize(() => {
@@ -40,8 +58,8 @@ function createTables() {
     db.run(`
       CREATE TABLE IF NOT EXISTS customers (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        customer_number TEXT UNIQUE NOT NULL,
-        customer_name TEXT NOT NULL,
+        customer_number TEXT UNIQUE,
+        customer_name TEXT,
         address TEXT,
         city TEXT,
         zip_code TEXT,
@@ -53,111 +71,107 @@ function createTables() {
       )
     `, (err) => {
       if (err) console.error('Error creating customers table:', err);
-      else console.log('✅ Customers table ready');
     });
 
     // Categories table
     db.run(`
       CREATE TABLE IF NOT EXISTS categories (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_name TEXT NOT NULL UNIQUE,
+        name TEXT UNIQUE,
         description TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `, (err) => {
       if (err) console.error('Error creating categories table:', err);
-      else console.log('✅ Categories table ready');
     });
 
     // Products table
     db.run(`
       CREATE TABLE IF NOT EXISTS products (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        category_id INTEGER NOT NULL,
-        product_name TEXT NOT NULL,
-        item_id TEXT UNIQUE NOT NULL,
-        price DECIMAL(10, 2) NOT NULL,
+        category_id INTEGER,
+        item_id TEXT UNIQUE,
+        name TEXT,
+        price DECIMAL(10,2),
         description TEXT,
         in_stock INTEGER DEFAULT 1,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+        FOREIGN KEY(category_id) REFERENCES categories(id)
       )
     `, (err) => {
       if (err) console.error('Error creating products table:', err);
-      else console.log('✅ Products table ready');
     });
 
     // Orders table
     db.run(`
       CREATE TABLE IF NOT EXISTS orders (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_number TEXT UNIQUE NOT NULL,
-        customer_id INTEGER NOT NULL,
-        customer_number TEXT NOT NULL,
+        order_number TEXT UNIQUE,
+        customer_id INTEGER,
+        customer_number TEXT,
         order_date DATETIME DEFAULT CURRENT_TIMESTAMP,
         status TEXT DEFAULT 'pending',
-        total_amount DECIMAL(10, 2) NOT NULL,
+        total_amount DECIMAL(10,2),
         notes TEXT,
-        delivery_date TEXT,
-        delivery_time TEXT,
+        delivery_date DATE,
+        delivery_time TIME,
         confirmed_at DATETIME,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (customer_id) REFERENCES customers(id)
+        FOREIGN KEY(customer_id) REFERENCES customers(id)
       )
     `, (err) => {
       if (err) console.error('Error creating orders table:', err);
-      else console.log('✅ Orders table ready');
     });
 
     // Order items table
     db.run(`
       CREATE TABLE IF NOT EXISTS order_items (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        order_id INTEGER NOT NULL,
-        product_id INTEGER NOT NULL,
-        item_id TEXT NOT NULL,
-        product_name TEXT NOT NULL,
-        quantity INTEGER NOT NULL,
-        price DECIMAL(10, 2) NOT NULL,
-        subtotal DECIMAL(10, 2) NOT NULL,
+        order_id INTEGER,
+        product_id INTEGER,
+        item_id TEXT,
+        product_name TEXT,
+        quantity INTEGER,
+        price DECIMAL(10,2),
+        subtotal DECIMAL(10,2),
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
-        FOREIGN KEY (product_id) REFERENCES products(id)
+        FOREIGN KEY(order_id) REFERENCES orders(id),
+        FOREIGN KEY(product_id) REFERENCES products(id)
       )
     `, (err) => {
       if (err) console.error('Error creating order_items table:', err);
-      else console.log('✅ Order items table ready');
     });
 
-    console.log('📦 All tables initialized');
+    console.log('✅ All tables created/verified');
   });
 }
 
-export function runAsync(sql, params = []) {
+// Helper functions for database operations
+export const runAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
-    db.run(sql, params, function(err) {
+    db.run(sql, params, (err) => {
       if (err) reject(err);
-      else resolve({ id: this.lastID, changes: this.changes });
+      else resolve();
     });
   });
-}
+};
 
-export function getAsync(sql, params = []) {
+export const getAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
     db.get(sql, params, (err, row) => {
       if (err) reject(err);
       else resolve(row);
     });
   });
-}
+};
 
-export function allAsync(sql, params = []) {
+export const allAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
     db.all(sql, params, (err, rows) => {
       if (err) reject(err);
-      else resolve(rows || []);
+      else resolve(rows);
     });
   });
-}
+};
