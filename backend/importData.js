@@ -40,6 +40,47 @@ function cleanPhone(phone) {
   return str || null;
 }
 
+function initializeDatabase() {
+  return new Promise((resolve, reject) => {
+    db.serialize(() => {
+      db.run(`
+        CREATE TABLE IF NOT EXISTS customers (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          customer_number TEXT UNIQUE,
+          customer_name TEXT,
+          address TEXT,
+          city TEXT,
+          zip_code TEXT,
+          phone_1 TEXT,
+          phone_2 TEXT,
+          phone_3 TEXT
+        )
+      `);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS categories (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          category_name TEXT UNIQUE
+        )
+      `);
+
+      db.run(`
+        CREATE TABLE IF NOT EXISTS products (
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
+          item_id TEXT UNIQUE,
+          product_name TEXT,
+          price REAL,
+          category_id INTEGER,
+          FOREIGN KEY (category_id) REFERENCES categories(id)
+        )
+      `, (err) => {
+        if (err) reject(err);
+        else resolve();
+      });
+    });
+  });
+}
+
 async function bulkImport() {
   return new Promise((resolve, reject) => {
     db.serialize(() => {
@@ -131,7 +172,9 @@ async function bulkImport() {
   });
 }
 
-bulkImport().catch(err => {
-  console.error('❌ Import failed:', err);
-  process.exit(1);
-});
+initializeDatabase()
+  .then(() => bulkImport())
+  .catch(err => {
+    console.error('❌ Import failed:', err);
+    process.exit(1);
+  });

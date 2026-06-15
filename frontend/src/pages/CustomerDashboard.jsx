@@ -1,261 +1,83 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config/api';
+import logo from '../../assets/logo.jpg';
 
-export default function CustomerDashboard({ user, onLogout }) {
-  const [categories, setCategories] = useState([]);
-  const [products, setProducts] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [cart, setCart] = useState([]);
-  const [showCart, setShowCart] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchCategories();
-  }, []);  
-
-  useEffect(() => {
-    if (categories.length > 0) {
-      if (!selectedCategory) {
-        setSelectedCategory(categories[0].id);
-      }
-    }
-  }, [categories]);
-
-  useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory, searchTerm]);
-
-  const fetchCategories = async () => {
-    try {
-      const response = await fetch(`${API_URL}/categories`);
-      const data = await response.json();
-      setCategories(data.categories || []);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-    }
-  };
-
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      let url = `${API_URL}/products`;
-      
-      if (searchTerm) {
-        url = `${API_URL}/products/search/${searchTerm}`;
-      } else if (selectedCategory) {
-        url = `${API_URL}/products?categoryId=${selectedCategory}`;
-      }
-
-      const response = await fetch(url);
-      const data = await response.json();
-      setProducts(data.products || []);
-    } catch (err) {
-      console.error('Error fetching products:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAddToCart = (product, quantity) => {
-    const existingItem = cart.find(item => item.id === product.id);
-    
-    if (existingItem) {
-      setCart(cart.map(item =>
-        item.id === product.id
-          ? { ...item, quantity: item.quantity + quantity }
-          : item
-      ));
-    } else {
-      setCart([...cart, { ...product, quantity }]);
-    }
-  };
-
-  const handleRemoveFromCart = (productId) => {
-    setCart(cart.filter(item => item.id !== productId));
-  };
-
-  const handleUpdateQuantity = (productId, quantity) => {
-    if (quantity <= 0) {
-      handleRemoveFromCart(productId);
-    } else {
-      setCart(cart.map(item =>
-        item.id === productId ? { ...item, quantity } : item
-      ));
-    }
-  };
-
-  return (
-    <div dir="rtl" className="min-h-screen bg-[#f9f7f3]">
-      {/* Header/Navbar */}
-      <header className="bg-white border-b-2 border-[#e8dcc8] shadow-sm sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
-          <div className="flex items-center gap-6">
-            <button
-              onClick={() => setShowCart(true)}
-              className="relative text-3xl hover:scale-110 transition-transform"
-            >
-              🛒
-              {cart.length > 0 && (
-                <span className="absolute -top-3 -right-3 bg-[#c19a6b] text-white text-xs rounded-full w-6 h-6 flex items-center justify-center font-bold">
-                  {cart.length}
-                </span>
-              )}
-            </button>
-          </div>
-
-          <div className="text-center flex-1">
-            <h1 className="text-2xl font-bold text-[#2c2416]" style={{ letterSpacing: '0.05em' }}>
-              אלפי ח.ס
-            </h1>
-          </div>
-
-          <button
-            onClick={onLogout}
-            className="text-[#a89080] hover:text-[#c19a6b] font-bold transition-colors text-sm uppercase tracking-wider"
-          >
-            יציאה
-          </button>
-        </div>
-      </header>
-
-      {/* Search Bar */}
-      <div className="bg-white border-b-2 border-[#e8dcc8]">
-        <div className="max-w-7xl mx-auto px-6 py-6">
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="חיפוש מוצרים..."
-            className="w-full px-6 py-3 border-2 border-[#e8dcc8] rounded-lg focus:outline-none focus:border-[#c19a6b] text-right text-sm"
-          />
-        </div>
-      </div>
-
-      {/* Categories Navigation */}
-      <div className="bg-white border-b-2 border-[#e8dcc8] sticky top-20 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {categories.map(category => (
-              <button
-                key={category.id}
-                onClick={() => {
-                  setSelectedCategory(category.id);
-                  setSearchTerm('');
-                }}
-                className={`px-6 py-2 rounded-full font-bold text-sm whitespace-nowrap transition-all uppercase tracking-wider ${
-                  selectedCategory === category.id
-                    ? 'bg-[#c19a6b] text-white shadow-md'
-                    : 'bg-[#f9f7f3] text-[#2c2416] hover:bg-[#e8dcc8]'
-                }`}
-              >
-                {category.name}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Products Grid */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        {loading ? (
-          <div className="text-center py-12">
-            <p className="text-[#a89080]">טוען מוצרים...</p>
-          </div>
-        ) : products.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-[#a89080]">לא נמצאו מוצרים</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-            {products.map(product => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-              />
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Cart Sidebar */}
-      {showCart && (
-        <CartSidebar
-          cartItems={cart}
-          onRemove={handleRemoveFromCart}
-          onUpdateQuantity={handleUpdateQuantity}
-          onClose={() => setShowCart(false)}
-          user={user}
-        />
-      )}
-    </div>
-  );
-}
-
+// ── Product Card ───────────────────────────────────────────────
+// ── Compact Product Card ───────────────────────────────────────────
 function ProductCard({ product, onAddToCart }) {
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+
+  const handleAdd = () => {
+    onAddToCart(product, quantity);
+    setQuantity(1);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1200);
+  };
 
   return (
-    <div className="bg-white rounded-xl shadow-md hover:shadow-xl transition-shadow overflow-hidden group border-2 border-[#e8dcc8]">
-      {/* Product Image */}
-      <div className="h-40 bg-gradient-to-br from-[#f9f7f3] to-[#e8dcc8] flex items-center justify-center text-gray-400 relative overflow-hidden">
-        <div className="text-4xl opacity-30">📦</div>
-        <div className="absolute top-3 right-3 bg-[#c19a6b] text-white px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-          זמינה
-        </div>
+    <div className="bg-white rounded-xl border border-brand-200 overflow-hidden flex flex-row sm:flex-col h-full
+      shadow-sm hover:shadow-md hover:border-brand-300 transition-all duration-200 group">
+      
+      {/* Mini Image Container */}
+      <div className="w-28 h-28 min-w-[112px] sm:w-full sm:h-32 flex items-center justify-center relative overflow-hidden flex-shrink-0"
+        style={{ background: 'linear-gradient(148deg, #fdf9f4 0%, #f5ede0 100%)' }}>
+        <span className="text-4xl transform group-hover:scale-105 transition-transform duration-200 select-none">📦</span>
+   
       </div>
 
-      {/* Product Info */}
-      <div className="p-4">
-        <h3 className="font-bold text-[#2c2416] text-xs mb-3 text-right line-clamp-2 min-h-8">
-          {product.name}
-        </h3>
+      {/* Compact Body */}
+      <div className="p-3 flex flex-col flex-1 justify-between gap-1.5 min-w-0">
+        <div>
+          <h3 className="text-xs font-bold text-brand-900 leading-tight line-clamp-2 min-h-[32px] mb-0.5">
+            {product.name}
+          </h3>
+        
+        </div>
 
-        {/* Price */}
-        <div className="text-right mb-4">
-          <p className="text-xl font-bold text-[#c19a6b]">
-            ₪{parseFloat(product.price).toFixed(2)}
+        <div className="flex flex-col gap-1.5">
+          <p className="text-lg font-black text-brand-500 tracking-tight flex items-baseline gap-0.5">
+        
           </p>
-        </div>
 
-        {/* Quantity Selector */}
-        <div className="flex items-center justify-between mb-4 bg-[#f9f7f3] rounded-lg p-1">
-          <button
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="text-[#a89080] hover:text-[#c19a6b] font-bold w-7 text-center transition-colors"
-          >
-            −
-          </button>
-          <input
-            type="number"
-            value={quantity}
-            onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-            className="w-8 text-center bg-transparent font-bold text-[#2c2416] text-sm"
-          />
-          <button
-            onClick={() => setQuantity(quantity + 1)}
-            className="text-[#a89080] hover:text-[#c19a6b] font-bold w-7 text-center transition-colors"
-          >
-            +
-          </button>
+          {/* Micro Quantity + Add Actions */}
+          <div className="flex items-center gap-1.5 w-full">
+            <div className="flex items-center border border-brand-200 rounded-lg overflow-hidden bg-brand-50 h-7 flex-shrink-0">
+              <button
+                onClick={() => setQuantity(q => Math.max(1, q - 1))}
+                className="w-6 h-full flex items-center justify-center text-brand-400 hover:text-brand-600
+                  hover:bg-brand-100 transition-colors text-sm font-bold"
+              >−</button>
+              <input
+                type="number"
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-7 text-center bg-transparent text-xs font-bold text-brand-900 border-x
+                  border-brand-200 focus:outline-none"
+              />
+              <button
+                onClick={() => setQuantity(q => q + 1)}
+                className="w-6 h-full flex items-center justify-center text-brand-400 hover:text-brand-600
+                  hover:bg-brand-100 transition-colors text-sm font-bold"
+              >+</button>
+            </div>
+            
+            <button
+              onClick={handleAdd}
+              className={`flex-1 h-7 px-2 rounded-lg text-[11px] font-bold text-white transition-all duration-200 truncate ${
+                added ? 'bg-green-600' : 'bg-brand-500 hover:bg-brand-600'
+              }`}
+            >
+              {added ? '✓ נוסף' : 'הוסף'}
+            </button>
+          </div>
         </div>
-
-        {/* Add to Cart Button */}
-        <button
-          onClick={() => {
-            onAddToCart(product, quantity);
-            setQuantity(1);
-          }}
-          className="w-full bg-[#c19a6b] hover:bg-[#8b7355] text-white font-bold py-2 px-3 rounded-lg transition-all text-xs uppercase tracking-wider"
-        >
-          הוסף לעגלה
-        </button>
       </div>
     </div>
   );
 }
 
+// ── Cart Sidebar ───────────────────────────────────────────────
 function CartSidebar({ cartItems, onRemove, onUpdateQuantity, onClose, user }) {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [deliveryTime, setDeliveryTime] = useState('');
@@ -263,18 +85,12 @@ function CartSidebar({ cartItems, onRemove, onUpdateQuantity, onClose, user }) {
   const [loading, setLoading] = useState(false);
 
   const totalAmount = cartItems.reduce(
-    (sum, item) => sum + parseFloat(item.price) * item.quantity,
-    0
+    (sum, item) => sum + parseFloat(item.price) * item.quantity, 0
   );
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!deliveryDate) {
-      alert('בחר תאריך הספקה');
-      return;
-    }
-
+    if (!deliveryDate) { alert('בחר תאריך הספקה'); return; }
     setLoading(true);
     try {
       const itemsToSend = cartItems.map(item => ({
@@ -282,9 +98,8 @@ function CartSidebar({ cartItems, onRemove, onUpdateQuantity, onClose, user }) {
         itemId: item.itemId || item.id,
         productName: item.name,
         price: parseFloat(item.price),
-        quantity: item.quantity
+        quantity: item.quantity,
       }));
-
       const response = await fetch(`${API_URL}/orders`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -294,15 +109,14 @@ function CartSidebar({ cartItems, onRemove, onUpdateQuantity, onClose, user }) {
           items: itemsToSend,
           deliveryDate,
           deliveryTime,
-          notes
-        })
+          notes,
+        }),
       });
-
       if (response.ok) {
-        alert('ההזמנה נשלחה בהצלחה!');
+        alert('ההזמנה נשלחה בהצלחה! 🎉');
         window.location.href = '/';
       }
-    } catch (err) {
+    } catch {
       alert('שגיאה בשליחת ההזמנה');
     } finally {
       setLoading(false);
@@ -310,135 +124,306 @@ function CartSidebar({ cartItems, onRemove, onUpdateQuantity, onClose, user }) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-end z-50">
-      <div className="bg-white w-full max-w-md h-full overflow-y-auto shadow-2xl">
+    <div className="fixed inset-0 z-[100] flex justify-start" style={{ direction: 'rtl' }}>
+      {/* Overlay */}
+      <div
+        className="absolute inset-0 bg-brand-900/50 backdrop-blur-sm transition-opacity duration-300"
+        onClick={onClose}
+      />
+
+      {/* Panel */}
+      <div className="relative bg-white w-full max-w-[440px] h-full flex flex-col shadow-2xl z-10"
+        style={{ animation: 'slideInRightrtl .32s cubic-bezier(0.16, 1, 0.3, 1)' }}>
+
         {/* Header */}
-        <div className="bg-[#2c2416] text-white p-6 sticky top-0 z-10">
-          <div className="flex justify-between items-center">
-            <button
-              onClick={onClose}
-              className="text-white hover:text-[#c19a6b] font-bold text-2xl"
-            >
-              ✕
-            </button>
-            <h2 className="text-xl font-bold">עגלת קניות</h2>
+        <div className="flex items-center justify-between px-6 py-5 border-b border-brand-100"
+          style={{ background: 'linear-gradient(135deg, #2c2416, #1a1208)' }}>
+          <div className="flex items-center gap-3">
+            <h2 className="text-lg font-black text-white">עגלת קניות</h2>
+            <span className="px-2.5 py-0.5 bg-white/10 text-white rounded-full text-xs font-medium">
+              {cartItems.length} פריטים
+            </span>
           </div>
+          <button
+            onClick={onClose}
+            className="w-9 h-9 flex items-center justify-center rounded-xl text-white/80 text-xl
+              transition-all hover:bg-white/10 hover:text-white"
+          >✕</button>
         </div>
 
-        {/* Cart Items */}
-        <div className="p-6 space-y-4 max-h-[40vh] overflow-y-auto">
+        {/* Items Container */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide">
           {cartItems.length === 0 ? (
-            <p className="text-center text-[#a89080] py-8">העגלה ריקה</p>
-          ) : (
-            cartItems.map(item => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between bg-[#f9f7f3] p-4 rounded-lg border-2 border-[#e8dcc8]"
-              >
-                <button
-                  onClick={() => onRemove(item.id)}
-                  className="text-red-500 hover:text-red-700 font-bold text-lg"
-                >
-                  🗑️
-                </button>
-
-                <div className="text-right flex-1 mx-3">
-                  <p className="font-bold text-sm text-[#2c2416]">{item.name}</p>
-                  <p className="text-xs text-[#a89080]">
-                    ₪{parseFloat(item.price).toFixed(2)}
-                  </p>
-                </div>
-
-                <div className="flex items-center bg-white border-2 border-[#e8dcc8] rounded-lg">
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
-                    className="px-2 text-[#c19a6b] font-bold text-sm"
-                  >
-                    −
-                  </button>
-                  <input
-                    type="number"
-                    value={item.quantity}
-                    onChange={(e) =>
-                      onUpdateQuantity(item.id, parseInt(e.target.value) || 1)
-                    }
-                    className="w-8 text-center bg-transparent font-bold text-[#2c2416] text-xs"
-                  />
-                  <button
-                    onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
-                    className="px-2 text-[#c19a6b] font-bold text-sm"
-                  >
-                    +
-                  </button>
-                </div>
-
-                <div className="text-right ml-3 font-bold text-[#c19a6b] w-16 text-sm">
-                  ₪{(parseFloat(item.price) * item.quantity).toFixed(2)}
-                </div>
+            <div className="text-center py-20 text-brand-300 flex flex-col items-center justify-center h-full">
+              <div className="text-5xl mb-4 bg-brand-100 w-20 h-20 flex items-center justify-center rounded-full">🛒</div>
+              <p className="text-base font-bold text-brand-800">העגלה שלך ריקה</p>
+              <p className="text-xs text-brand-400 mt-1">הוסף מוצרים מהחנות כדי להתחיל הזמנה</p>
+            </div>
+          ) : cartItems.map(item => (
+            <div key={item.id}
+              className="flex items-center gap-3 p-3.5 bg-brand-50/50 rounded-xl border border-brand-200 hover:border-brand-300 transition-all">
+              <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 shadow-inner"
+                style={{ background: 'linear-gradient(135deg, #f5ede0, #e8d5b8)' }}>📦</div>
+              
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-brand-900 leading-tight truncate">{item.name}</p>
+                <p className="text-xs text-brand-400 mt-0.5">₪{parseFloat(item.price).toFixed(2)} ליחידה</p>
               </div>
-            ))
-          )}
+
+              <div className="flex items-center bg-white border border-brand-200 rounded-lg p-0.5 shadow-sm">
+                <button onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                  className="w-7 h-7 flex items-center justify-center text-brand-500 font-bold text-base
+                    hover:bg-brand-50 rounded transition-colors">−</button>
+                <span className="w-7 text-center text-sm font-bold text-brand-900">{item.quantity}</span>
+                <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  className="w-7 h-7 flex items-center justify-center text-brand-500 font-bold text-base
+                    hover:bg-brand-50 rounded transition-colors">+</button>
+              </div>
+
+              <div className="text-sm font-black text-brand-900 w-16 text-left">
+                ₪{(parseFloat(item.price) * item.quantity).toFixed(2)}
+              </div>
+
+              <button onClick={() => onRemove(item.id)}
+                className="w-8 h-8 flex items-center justify-center text-brand-300 hover:text-red-500
+                  hover:bg-red-50 rounded-lg transition-all text-base">🗑</button>
+            </div>
+          ))}
         </div>
 
-        {/* Order Form */}
+        {/* Order Form & Footer */}
         {cartItems.length > 0 && (
-          <form onSubmit={handleSubmit} className="p-6 border-t-2 border-[#e8dcc8] space-y-4">
-            <div>
-              <label className="block text-xs font-bold text-[#2c2416] mb-2 uppercase tracking-wider">
-                תאריך הספקה
-              </label>
-              <input
-                type="date"
-                value={deliveryDate}
-                onChange={(e) => setDeliveryDate(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-[#e8dcc8] rounded-lg text-right text-sm focus:outline-none focus:border-[#c19a6b]"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#2c2416] mb-2 uppercase tracking-wider">
-                שעת הספקה
-              </label>
-              <input
-                type="time"
-                value={deliveryTime}
-                onChange={(e) => setDeliveryTime(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-[#e8dcc8] rounded-lg text-right text-sm focus:outline-none focus:border-[#c19a6b]"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-[#2c2416] mb-2 uppercase tracking-wider">
-                הערות
-              </label>
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-[#e8dcc8] rounded-lg text-right text-sm focus:outline-none focus:border-[#c19a6b]"
-                rows="3"
-              />
-            </div>
-
-            <div className="bg-[#f9f7f3] p-4 rounded-lg border-2 border-[#e8dcc8]">
-              <div className="flex justify-between items-center">
-                <span className="text-lg font-bold text-[#c19a6b]">
-                  ₪{totalAmount.toFixed(2)}
-                </span>
-                <span className="text-sm font-bold text-[#2c2416] uppercase tracking-wider">סה"כ:</span>
+          <form onSubmit={handleSubmit} className="border-t border-brand-200 bg-white shadow-[0_-8px_30px_rgb(0,0,0,0.04)]">
+            <div className="p-5 space-y-4 max-h-[35vh] overflow-y-auto border-b border-brand-100">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-brand-700 mb-1.5">
+                    תאריך הספקה *
+                  </label>
+                  <input type="date" value={deliveryDate} onChange={e => setDeliveryDate(e.target.value)}
+                    required
+                    className="w-full px-3 py-2.5 border border-brand-200 rounded-xl text-sm bg-brand-50/50
+                      focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-brand-700 mb-1.5">
+                    שעת הספקה
+                  </label>
+                  <input type="time" value={deliveryTime} onChange={e => setDeliveryTime(e.target.value)}
+                    className="w-full px-3 py-2.5 border border-brand-200 rounded-xl text-sm bg-brand-50/50
+                      focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100 transition-all" />
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-brand-700 mb-1.5">
+                  הערות מיוחדות להזמנה
+                </label>
+                <textarea value={notes} onChange={e => setNotes(e.target.value)}
+                  rows={2} placeholder="לדוגמה: נא להשאיר ליד הדלת במקרה שאין מענה..."
+                  className="w-full px-3 py-2 border border-brand-200 rounded-xl text-sm bg-brand-50/50
+                    resize-none focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100
+                    transition-all placeholder:text-brand-300" />
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-[#c19a6b] hover:bg-[#8b7355] text-white font-bold py-3 rounded-lg transition-all disabled:opacity-50 uppercase tracking-wider"
-            >
-              {loading ? 'שולח...' : 'שלח הזמנה'}
-            </button>
+            {/* Total Block */}
+            <div className="p-5 bg-brand-50/50">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-sm font-bold text-brand-600">סה"כ לתשלום</span>
+                <span className="text-3xl font-black text-brand-900 tracking-tight flex items-baseline gap-0.5">
+                  <span className="text-lg font-bold">₪</span>
+                  {totalAmount.toFixed(2)}
+                </span>
+              </div>
+              <button type="submit" disabled={loading}
+                className="w-full py-4 rounded-xl text-base font-extrabold text-white transition-all
+                  duration-200 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                style={{
+                  background: 'linear-gradient(135deg, #22a567, #1a9059)',
+                  boxShadow: '0 6px 20px rgba(34,165,103,0.3)',
+                }}>
+                {loading ? 'שולח הזמנה...' : '✓ אישור ושליחת הזמנה'}
+              </button>
+            </div>
           </form>
         )}
       </div>
+
+      <style>{`
+        @keyframes slideInRightrtl {
+          from { transform: translateX(100%); }
+          to   { transform: translateX(0); }
+        }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+    </div>
+  );
+}
+
+// ── Customer Dashboard ─────────────────────────────────────────
+export default function CustomerDashboard({ user, onLogout }) {
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [cart, setCart] = useState([]);
+  const [showCart, setShowCart] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { fetchCategories(); }, []);
+  useEffect(() => { if (categories.length > 0 && !selectedCategory) setSelectedCategory(categories[0].id); }, [categories]);
+  useEffect(() => { fetchProducts(); }, [selectedCategory, searchTerm]);
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch(`${API_URL}/categories`);
+      const data = await res.json();
+      setCategories(data.categories || []);
+    } catch (err) { console.error(err); }
+  };
+
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      let url = `${API_URL}/products`;
+      if (searchTerm) url = `${API_URL}/products/search/${searchTerm}`;
+      else if (selectedCategory) url = `${API_URL}/products?categoryId=${selectedCategory}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      setProducts(data.products || []);
+    } catch (err) { console.error(err); }
+    finally { setLoading(false); }
+  };
+
+  const handleAddToCart = (product, quantity) => {
+    setCart(prev => {
+      const ex = prev.find(i => i.id === product.id);
+      if (ex) return prev.map(i => i.id === product.id ? { ...i, quantity: i.quantity + quantity } : i);
+      return [...prev, { ...product, quantity }];
+    });
+  };
+
+  const handleRemoveFromCart = (productId) => setCart(cart.filter(i => i.id !== productId));
+
+  const handleUpdateQuantity = (productId, quantity) => {
+    if (quantity <= 0) handleRemoveFromCart(productId);
+    else setCart(cart.map(i => i.id === productId ? { ...i, quantity } : i));
+  };
+
+  const cartCount = cart.reduce((s, i) => s + i.quantity, 0);
+
+  return (
+    <div dir="rtl" className="min-h-screen bg-[#faf8f5] font-sans antialiased">
+      {/* Navbar */}
+      <header className="bg-white border-b border-brand-100 h-20 flex items-center justify-between px-4 sm:px-8 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
+        <div className="flex items-center gap-3">
+          <img src={logo} alt="לוגו" className="w-11 h-11 rounded-full object-cover border-2 border-brand-200 shadow-sm" />
+          <div className="flex flex-col">
+            <span className="text-base sm:text-lg font-black text-brand-900 tracking-tight leading-tight">ח.ס אלפי</span>
+            <span className="text-[11px] text-brand-400 font-medium hidden sm:inline">מערכת הזמנות דיגיטלית</span>
+          </div>
+        </div>
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowCart(true)}
+            className="flex items-center gap-2.5 px-4 py-2.5 rounded-xl text-sm font-bold text-brand-800
+              border border-brand-200 bg-brand-50 hover:bg-brand-100 active:scale-95 transition-all shadow-sm"
+          >
+            <span className="text-base">🛒</span>
+            <span className="hidden xs:inline">עגלת קניות</span>
+            {cartCount > 0 && (
+              <span className="bg-brand-500 text-white rounded-full min-w-5 h-5 px-1.5 flex items-center justify-center text-[11px] font-black animate-pulse">
+                {cartCount}
+              </span>
+            )}
+          </button>
+          
+          <button onClick={onLogout}
+            className="px-4 py-2.5 border border-brand-200 rounded-xl text-xs font-bold
+              text-brand-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-all">
+            יציאה
+          </button>
+        </div>
+      </header>
+
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        
+        {/* Search Bar Block */}
+        <div className="bg-white rounded-2xl border border-brand-100 p-4 sm:p-6 shadow-sm">
+          <div className="relative max-w-2xl mx-auto">
+            <span className="absolute right-4 top-1/2 -translate-y-1/2 text-brand-300 text-lg pointer-events-none">🔍</span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="חפש מוצרים, מותגים או פריטים..."
+              className="w-full pr-12 pl-4 py-3.5 border border-brand-200 rounded-2xl text-sm bg-brand-50/50
+                focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-4 focus:ring-brand-100
+                transition-all placeholder:text-brand-300 shadow-inner"
+            />
+          </div>
+        </div>
+
+        {/* Floating / Sticky Carousel Category Strip */}
+        {!searchTerm && (
+          <div className="relative bg-white border border-brand-100 rounded-2xl shadow-sm px-4 py-3.5 sticky top-24 z-40
+            before:absolute before:right-0 before:top-0 before:bottom-0 before:w-8 before:bg-gradient-to-l before:from-white before:to-transparent before:pointer-events-none before:z-10
+            after:absolute after:left-0 after:top-0 after:bottom-0 after:w-8 after:bg-gradient-to-r after:from-white after:to-transparent after:pointer-events-none after:z-10">
+            <div className="flex gap-2 overflow-x-auto scrollbar-hide py-0.5 px-4 mask-gradient layout-scroll snap-x">
+              {categories.map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => { setSelectedCategory(cat.id); setSearchTerm(''); }}
+                  className={`flex-shrink-0 px-5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap
+                    border transition-all duration-200 snap-center ${
+                    selectedCategory === cat.id
+                      ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20 scale-102'
+                      : 'bg-brand-50/60 text-brand-700 border-brand-200 hover:bg-brand-100/80 hover:border-brand-300'
+                  }`}
+                >
+                  {cat.name}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Responsive Flex/Fluid Grid Layout for Products */}
+        <div className="py-2">
+          {loading ? (
+            <div className="text-center py-24 text-brand-400 font-medium flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-4 border-brand-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-sm">טוען קטלוג מוצרים...</p>
+            </div>
+          ) : products.length === 0 ? (
+            <div className="text-center py-24 bg-white rounded-2xl border border-brand-100 shadow-sm text-brand-400">
+              <span className="text-4xl block mb-3">🔍</span>
+              <p className="text-base font-bold text-brand-800">לא נמצאו מוצרים תואמים</p>
+              <p className="text-xs mt-1">נסה לשנות את מילת החיפוש או לבחור קטגוריה אחרת</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,1fr))] gap-4 sm:gap-6">
+              {products.map(product => (
+                <ProductCard key={product.id} product={product} onAddToCart={handleAddToCart} />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+
+      {/* Cart Sidebar Implementation */}
+      {showCart && (
+        <CartSidebar
+          cartItems={cart}
+          onRemove={handleRemoveFromCart}
+          onUpdateQuantity={handleUpdateQuantity}
+          onClose={() => setShowCart(false)}
+          user={user}
+        />
+      )}
     </div>
   );
 }

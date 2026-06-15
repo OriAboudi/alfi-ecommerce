@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { API_URL } from '../config/api';
-import logo from '../../assets/logo.jpg'; // Import the logo
+import logo from '../../assets/logo.jpg';
 
 export default function LoginPage({ onLogin }) {
   const [activeTab, setActiveTab] = useState('customer');
@@ -16,26 +16,23 @@ export default function LoginPage({ onLogin }) {
     e.preventDefault();
     setError('');
     setLoading(true);
-
     try {
       const response = await fetch(`${API_URL}/customers/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerNumber })
+        body: JSON.stringify({ customerNumber }),
       });
-
       const data = await response.json();
-
       if (response.ok && data.customer) {
         onLogin({
           id: data.customer.id,
           name: data.customer.customer_name,
-          customerNumber: data.customer.customer_number
+          customerNumber: data.customer.customer_number,
         }, 'customer');
       } else {
         setError('מספר לקוח לא נמצא');
       }
-    } catch (err) {
+    } catch {
       setError('שגיאה בחיבור לשרת');
     } finally {
       setLoading(false);
@@ -45,7 +42,6 @@ export default function LoginPage({ onLogin }) {
   const handleAdminLogin = (e) => {
     e.preventDefault();
     setError('');
-
     if (adminUsername === 'admin' && adminPassword === ADMIN_PASSWORD) {
       onLogin({ name: 'Admin' }, 'admin');
     } else {
@@ -54,160 +50,147 @@ export default function LoginPage({ onLogin }) {
   };
 
   return (
-    <div 
+    <div
       dir="rtl"
-      className="min-h-screen bg-gradient-to-br from-[#f5f1e8] to-[#e8dcc8] flex flex-col items-center justify-center px-5 py-10"
+      className="min-h-screen flex flex-col items-center justify-center px-5 py-12 relative overflow-hidden"
+      style={{ background: 'linear-gradient(145deg, #fdf9f4 0%, #ede4d4 100%)' }}
     >
-      {/* Header Section */}
-      <div className="text-center mb-12">
-        {/* Logo Image */}
-        <div className="mb-6 flex justify-center">
-          <img 
-            src={logo}
-            alt="ח.ס אלפי"
-            className="w-80 h-80 rounded-full shadow-lg"
-          />
-        </div>
+      {/* Decorative glow */}
+      <div className="absolute w-[700px] h-[700px] rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(184,124,74,0.07) 0%, transparent 70%)', top: -250, right: -150 }} />
 
-        {/* Title */}
-        <h1 className="text-3xl font-bold text-[#2c2416] mb-2">
-ח.ס אלפי
-        </h1>
-
-        {/* Subtitle */}
-        <p className="text-sm text-[#6b5d52]">
-          צור הזמנה בקלות
-        </p>
+      {/* Logo */}
+      <div className="relative mb-6" style={{ width: 152, height: 152 }}>
+        <div className="absolute inset-0 rounded-full"
+          style={{ inset: -14, background: 'radial-gradient(circle, rgba(184,124,74,0.1) 0%, transparent 70%)' }} />
+        <img
+          src={logo}
+          alt="ח.ס אלפי"
+          className="relative rounded-full object-cover"
+          style={{
+            width: '100%', height: '100%',
+            boxShadow: '0 8px 32px rgba(184,124,74,0.22), 0 2px 8px rgba(44,28,8,0.08)',
+            border: '4px solid rgba(255,255,255,0.9)',
+          }}
+        />
       </div>
 
-      {/* Form Container */}
-      <div className="w-full max-w-sm bg-white rounded-lg shadow-lg p-10">
-        
-        {/* Error Message */}
+      {/* Brand name */}
+      <div className="text-center mb-9">
+        <h1 className="text-4xl font-black text-brand-900 tracking-tight mb-1">ח.ס אלפי</h1>
+        <p className="text-sm text-brand-400 font-medium">הספקת מזון למשרדים</p>
+      </div>
+
+      {/* Card */}
+      <div
+        className="w-full max-w-sm rounded-2xl px-10 py-9"
+        style={{
+          background: 'rgba(255,255,255,0.93)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(236,230,220,0.8)',
+          boxShadow: '0 4px 16px rgba(44,28,8,0.08)',
+        }}
+      >
+        {/* Error */}
         {error && (
-          <div className="mb-5 p-3 bg-red-50 border border-red-300 rounded-md text-right">
-            <p className="text-sm text-red-700">{error}</p>
+          <div className="mb-5 p-3 rounded-md text-sm font-semibold border-r-4 border-red-500 bg-red-50 text-red-700">
+            {error}
           </div>
         )}
 
-        {/* Tab System */}
-        <div className="flex gap-0 border-b-2 border-gray-200 mb-8">
-          <button 
-            onClick={() => {
-              setActiveTab('customer');
-              setError('');
-            }}
-            className={`flex-1 py-3 text-sm font-semibold border-b-4 transition-all ${
-              activeTab === 'customer' 
-                ? 'text-[#2c2416] border-[#8b7355]' 
-                : 'text-gray-400 border-transparent hover:text-gray-600'
-            }`}
-          >
-            כניסה ללקוח
-          </button>
-          <button 
-            onClick={() => {
-              setActiveTab('admin');
-              setError('');
-            }}
-            className={`flex-1 py-3 text-sm font-semibold border-b-4 transition-all ${
-              activeTab === 'admin' 
-                ? 'text-[#2c2416] border-[#8b7355]' 
-                : 'text-gray-400 border-transparent hover:text-gray-600'
-            }`}
-          >
-            כניסה למנהל
-          </button>
+        {/* Pill Tabs */}
+        <div className="flex bg-brand-100 rounded-lg p-1 gap-1 mb-7">
+          {['customer', 'admin'].map((t) => (
+            <button
+              key={t}
+              onClick={() => { setActiveTab(t); setError(''); }}
+              className={`flex-1 py-2.5 text-sm font-semibold rounded-md transition-all duration-200 ${
+                activeTab === t
+                  ? 'bg-white text-brand-800 shadow-sm'
+                  : 'text-brand-400 hover:text-brand-600'
+              }`}
+            >
+              {t === 'customer' ? 'כניסה ללקוח' : 'כניסה למנהל'}
+            </button>
+          ))}
         </div>
 
-        {/* Customer Login Form */}
+        {/* Customer form */}
         {activeTab === 'customer' && (
           <form onSubmit={handleCustomerLogin} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-[#2c2416] mb-2">
-                מספר לקוח
-              </label>
-              <input 
-                type="text" 
+              <label className="block text-xs font-bold text-brand-700 mb-2 tracking-wide">מספר לקוח</label>
+              <input
+                type="text"
                 placeholder="הזן את מספר הלקוח"
                 value={customerNumber}
                 onChange={(e) => setCustomerNumber(e.target.value)}
                 disabled={loading}
-                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-md
-                  focus:outline-none focus:border-[#8b7355] 
-                  focus:ring-4 focus:ring-[rgba(139,115,85,0.1)]
-                  transition-all duration-300 disabled:opacity-50"
+                className="w-full px-4 py-3 text-sm border-[1.5px] border-brand-200 rounded-lg bg-brand-50
+                  focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-[3px] focus:ring-brand-100
+                  placeholder:text-brand-300 transition-all duration-200 disabled:opacity-50"
               />
             </div>
-
-            <button 
+            <button
               type="submit"
               disabled={loading || !customerNumber}
-              className="w-full py-3 bg-[#8b7355] text-white font-semibold 
-                rounded-md hover:bg-[#6b5345] transition-all duration-300 
-                disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-lg text-sm font-extrabold text-white transition-all duration-200
+                disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              style={{
+                background: 'linear-gradient(135deg, #b87c4a, #8a5c32)',
+                boxShadow: '0 4px 14px rgba(184,124,74,0.28)',
+              }}
             >
-              {loading ? 'טוען...' : 'כנס לחשבון'}
+              {loading ? 'מתחבר...' : 'כנס לחשבון →'}
             </button>
           </form>
         )}
 
-        {/* Admin Login Form */}
+        {/* Admin form */}
         {activeTab === 'admin' && (
           <form onSubmit={handleAdminLogin} className="space-y-5">
             <div>
-              <label className="block text-xs font-semibold text-[#2c2416] mb-2">
-                שם משתמש
-              </label>
-              <input 
-                type="text" 
-                placeholder="הזן את שם המשתמש"
+              <label className="block text-xs font-bold text-brand-700 mb-2 tracking-wide">שם משתמש</label>
+              <input
+                type="text"
+                placeholder="admin"
                 value={adminUsername}
                 onChange={(e) => setAdminUsername(e.target.value)}
-                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-md
-                  focus:outline-none focus:border-[#8b7355] 
-                  focus:ring-4 focus:ring-[rgba(139,115,85,0.1)]
-                  transition-all duration-300"
+                className="w-full px-4 py-3 text-sm border-[1.5px] border-brand-200 rounded-lg bg-brand-50
+                  focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-[3px] focus:ring-brand-100
+                  placeholder:text-brand-300 transition-all duration-200"
               />
             </div>
-
             <div>
-              <label className="block text-xs font-semibold text-[#2c2416] mb-2">
-                סיסמא
-              </label>
-              <input 
-                type="password" 
-                placeholder="הזן את הסיסמא"
+              <label className="block text-xs font-bold text-brand-700 mb-2 tracking-wide">סיסמא</label>
+              <input
+                type="password"
+                placeholder="••••••••"
                 value={adminPassword}
                 onChange={(e) => setAdminPassword(e.target.value)}
-                className="w-full px-3 py-3 text-sm border border-gray-300 rounded-md
-                  focus:outline-none focus:border-[#8b7355] 
-                  focus:ring-4 focus:ring-[rgba(139,115,85,0.1)]
-                  transition-all duration-300"
+                className="w-full px-4 py-3 text-sm border-[1.5px] border-brand-200 rounded-lg bg-brand-50
+                  focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-[3px] focus:ring-brand-100
+                  placeholder:text-brand-300 transition-all duration-200"
               />
             </div>
-
-            <button 
+            <button
               type="submit"
               disabled={!adminUsername || !adminPassword}
-              className="w-full py-3 bg-[#8b7355] text-white font-semibold 
-                rounded-md hover:bg-[#6b5345] transition-all duration-300
-                disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3 rounded-lg text-sm font-extrabold text-white transition-all duration-200
+                disabled:opacity-50 disabled:cursor-not-allowed hover:-translate-y-0.5"
+              style={{
+                background: 'linear-gradient(135deg, #b87c4a, #8a5c32)',
+                boxShadow: '0 4px 14px rgba(184,124,74,0.28)',
+              }}
             >
-              כנס כמנהל
+              כנס כמנהל →
             </button>
-
-            <p className="text-xs text-gray-500 text-center mt-4">
-              שם משתמש: admin | סיסמא: admin123
-            </p>
+            <p className="text-xs text-brand-300 text-center">admin / admin123</p>
           </form>
         )}
       </div>
 
-      {/* Footer */}
-      <p className="text-xs text-gray-500 mt-8 text-center">
-        פתרון ניהול הזמנות מודרני ויעיל
-      </p>
+      <p className="text-xs text-brand-300 mt-8">מערכת הזמנות מודרנית ויעילה</p>
     </div>
   );
 }

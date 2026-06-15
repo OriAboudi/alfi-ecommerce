@@ -1,5 +1,5 @@
 {
-    "מוצרי חלב (Dairy)": [
+    " חלב": [
         { "item_id": "1001", "product_name": "חלב עמיד 3% 1 ליטר", "price": 5.36 },
         { "item_id": "1002", "product_name": "חלב עמיד 1% 1 ליטר", "price": 5.5 },
         { "item_id": "1003", "product_name": "חלב הומוגני 3% 1 ליטר", "price": 8.04 },
@@ -17,7 +17,7 @@
         { "item_id": "1291", "product_name": "שוקו שקית", "price": 1.65 },
         { "item_id": "1358", "product_name": "חלב ריץ'", "price": 9.9 }
     ],
-    "קפה, תה וסוכר (Hot Drinks & Sugar)": [
+    " קפה": [
         { "item_id": "1007", "product_name": "סוכר", "price": 3.5 },
         { "item_id": "1008", "product_name": "סוכרזית טבליות 1000 יח", "price": 9.9 },
         { "item_id": "1009", "product_name": "סוכרזית אבקה 1000 יחי", "price": 38.0 },
@@ -52,7 +52,7 @@
         { "item_id": "1347", "product_name": "קפה שחור מנות 600 יחידות", "price": 280.0 },
         { "item_id": "1357", "product_name": "קפה ציקו", "price": 25.9 }
     ],
-    "עוגיות, חטיפים ומתוקים (Cookies, Snacks & Sweets)": [
+    " חטיפים": [
         { "item_id": "1035", "product_name": "עוגיות מזרחיות", "price": 15.9 },
         { "item_id": "1036", "product_name": "נישנושים", "price": 8.9 },
         { "item_id": "1037", "product_name": "עו' בייגלה", "price": 11.9 },
@@ -110,7 +110,7 @@
         { "item_id": "1340", "product_name": "סוכריות לקישוט", "price": 9.0 },
         { "item_id": "1359", "product_name": "אפרופו", "price": 8.8 }
     ],
-    "משקאות וסירופים (Drinks & Syrups)": [
+    " משקאות": [
         { "item_id": "1033", "product_name": "סירופ ג'ימבו 2 ליטר", "price": 23.7 },
         { "item_id": "1034", "product_name": "סירופ דיאט 1 ליטר", "price": 4.2 },
         { "item_id": "1053", "product_name": "קוקה קולה 1.5 ליטר", "price": 5.5 },
@@ -150,7 +150,7 @@
         { "item_id": "1351", "product_name": "יין יבש קטן", "price": 29.0 },
         { "item_id": "1356", "product_name": "פחיות נקטר", "price": 3.3 }
     ],
-    "כלים חד פעמיים (Disposable Tableware)": [
+    " כלים": [
         { "item_id": "1064", "product_name": "100 כפיות", "price": 6.5 },
         { "item_id": "1065", "product_name": "'100 מזלגות יח", "price": 6.5 },
         { "item_id": "1066", "product_name": "100 סכינים יח'", "price": 6.5 },
@@ -186,7 +186,7 @@
         { "item_id": "1342", "product_name": "סכום שיק'", "price": 12.0 },
         { "item_id": "1353", "product_name": "'1000 מרקיות קלקר יח", "price": 200.0 }
     ],
-    "מוצרי נייר, מפיות וטישו (Paper Products, Napkins & Tissue)": [
+    " נייר": [
         { "item_id": "1083", "product_name": "ניייר טואלט יער גלילים 24", "price": 16.0 },
         { "item_id": "1084", "product_name": "ניייר טואלט יער גלילים 32", "price": 21.3 },
         { "item_id": "1085", "product_name": "ניייר טואלט קלין גלילים 48", "price": 46.0 },
@@ -209,7 +209,7 @@
         { "item_id": "1316", "product_name": "אסלוניות", "price": 28.0 },
         { "item_id": "1333", "product_name": "ניייר טואלט כלבים", "price": 55.0 }
     ],
-    "חומרי ניקוי, היגיינה ומשק בית (Cleaning, Hygiene & Household)": [
+    " ניקוי": [
         { "item_id": "1104", "product_name": "אקונומיקה כחול 4 ליטר", "price": 7.5 },
         { "item_id": "1105", "product_name": "אקונומיקה לבן 4 ליטר", "price": 13.9 },
         { "item_id": "1106", "product_name": "אקונומיקה ג'וול 4 ליטר", "price": 17.9 },
@@ -241,7 +241,7 @@
         { "item_id": "1354", "product_name": "שמפו", "price": 11.9 },
         { "item_id": "1355", "product_name": "סבון הוואוי/נקה", "price": 2.5 }
     ],
-    "מוצרי בסיס, שימורים ומזון יבש (Pantry, Canned Goods & Dry Food)": [
+    " מזון": [
         { "item_id": "1119", "product_name": "קל\" ת\"ג) פרות E( אפ' תפו'", "price": 6.0 },
         { "item_id": "1124", "product_name": "מרק זוגות", "price": 6.0 },
         { "item_id": "1125", "product_name": "טונה", "price": 4.0 },
@@ -261,7 +261,7 @@
         { "item_id": "1322", "product_name": "עדשים ירוק 1 ק\"ג", "price": 7.5 },
         { "item_id": "1313", "product_name": "סלט דג מלוח", "price": 19.9 }
     ],
-    "שקיות, עטיפות ואריזות (Bags, Wraps & Packaging)": [
+    " אריזות": [
         { "item_id": "1099", "product_name": "50/70 שקיות אשפה", "price": 0.0 },
         { "item_id": "1100", "product_name": "50/70 שקיות אשפה משרדי", "price": 0.0 },
         { "item_id": "1101", "product_name": "שקיות אשפה עירוני שחור", "price": 0.0 },
@@ -274,7 +274,7 @@
         { "item_id": "1341", "product_name": "שקיות מזון", "price": 7.9 },
         { "item_id": "1352", "product_name": "אריזות שי", "price": 138.5 }
     ],
-    "פירות, ירקות ומוצרים כלליים (Produce & Miscellaneous)": [
+    " פירות": [
         { "item_id": "1297", "product_name": "קרש לחיתוך", "price": 18.0 },
         { "item_id": "1299", "product_name": "אבטיח", "price": 2.8 },
         { "item_id": "1318", "product_name": "מלון", "price": 4.5 },
