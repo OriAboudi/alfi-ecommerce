@@ -51,6 +51,12 @@ app.get('/', (req, res) => {
     api: `${FRONTEND_URL}/api`
   });
 });
+app.use('/customers', customerRoutes);
+app.use('/categories', categoryRoutes);
+app.use('/products', productRoutes);
+app.use('/orders', orderRoutes);
+app.use('/admin', adminRoutes);
+
 
 // Routes
 app.use('/api/customers', customerRoutes);
