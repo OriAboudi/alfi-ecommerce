@@ -132,8 +132,17 @@ async function seedData() {
   try {
     // Load and seed customers from users.json
     const usersPath = path.join(__dirname, 'users.json');
-    const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    console.log(`📂 Customers file path: ${usersPath}`);
 
+    if (!fs.existsSync(usersPath)) {
+      console.error('❌ users.json not found!');
+      return;
+    }
+
+    const usersData = JSON.parse(fs.readFileSync(usersPath, 'utf8'));
+    console.log(`📊 Found ${usersData.length} customers in JSON`);
+
+    let customerCount = 0;
     for (const user of usersData) {
       const customerNumber = user.חשבון.toString();
       const customerName = user['שם חשבון'] || '';
@@ -151,41 +160,61 @@ async function seedData() {
            ON CONFLICT (customer_number) DO NOTHING`,
           [customerNumber, customerName, address, city, zipCode, phone1, phone2, phone3]
         );
+        customerCount++;
       } catch (error) {
-        console.error(`Error inserting customer ${customerNumber}:`, error.message);
+        console.error(`❌ Error inserting customer ${customerNumber}: ${error.message}`);
       }
     }
-    console.log(`✅ Loaded ${usersData.length} customers`);
+    console.log(`✅ Loaded ${customerCount} customers`);
 
     // Load and seed products from categorized_products.json
     const productsPath = path.join(__dirname, 'categorized_products.json');
-    const productsData = JSON.parse(fs.readFileSync(productsPath, 'utf8'));
+    console.log(`📂 Products file path: ${productsPath}`);
 
+    if (!fs.existsSync(productsPath)) {
+      console.error('❌ categorized_products.json not found!');
+      return;
+    }
+
+    const productsData = JSON.parse(fs.readFileSync(productsPath, 'utf8'));
+    console.log(`📊 Found ${Object.keys(productsData).length} categories in JSON`);
+
+    let totalProducts = 0;
     for (const [categoryName, products] of Object.entries(productsData)) {
       const trimmedCategory = categoryName.trim();
+      console.log(`  📦 Loading category: "${trimmedCategory}" (${products.length} products)`);
 
-      // Insert category
-      const catResult = await pool.query(
-        'INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
-        [trimmedCategory]
-      );
-      const categoryId = catResult.rows[0].id;
+      try {
+        // Insert category
+        const catResult = await pool.query(
+          'INSERT INTO categories (name) VALUES ($1) ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name RETURNING id',
+          [trimmedCategory]
+        );
+        const categoryId = catResult.rows[0].id;
+        console.log(`    ✅ Category ID: ${categoryId}`);
 
-      // Insert products for this category
-      for (const product of products) {
-        try {
-          await pool.query(
-            `INSERT INTO products (item_id, name, price, category_id)
-             VALUES ($1, $2, $3, $4)
-             ON CONFLICT (item_id) DO NOTHING`,
-            [product.item_id, product.product_name, product.price, categoryId]
-          );
-        } catch (error) {
-          console.error(`Error inserting product ${product.item_id}:`, error.message);
+        // Insert products for this category
+        let categoryProductCount = 0;
+        for (const product of products) {
+          try {
+            await pool.query(
+              `INSERT INTO products (item_id, name, price, category_id)
+               VALUES ($1, $2, $3, $4)
+               ON CONFLICT (item_id) DO NOTHING`,
+              [product.item_id, product.product_name, product.price, categoryId]
+            );
+            categoryProductCount++;
+            totalProducts++;
+          } catch (error) {
+            console.error(`    ❌ Error inserting product ${product.item_id}: ${error.message}`);
+          }
         }
+        console.log(`    ✅ Loaded ${categoryProductCount} products`);
+      } catch (error) {
+        console.error(`❌ Error with category "${trimmedCategory}": ${error.message}`);
       }
     }
-    console.log(`✅ Loaded products from ${Object.keys(productsData).length} categories`);
+    console.log(`✅ Total: Loaded ${totalProducts} products from ${Object.keys(productsData).length} categories`);
   } catch (error) {
     console.error('❌ Error seeding data:', error.message);
   }
