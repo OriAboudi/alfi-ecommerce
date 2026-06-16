@@ -123,7 +123,8 @@ export default function CustomerManagement() {
           placeholder="חפש לקוח לפי שם או מספר חשבון..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right"
+          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right text-base"
+          style={{ fontSize: '16px' }}
         />
       </div>
 

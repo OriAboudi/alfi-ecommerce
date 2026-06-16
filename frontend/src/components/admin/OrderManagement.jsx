@@ -140,7 +140,7 @@ export default function OrderManagement() {
       </div>
 
       {/* Orders Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-1 gap-4 md:gap-6">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-4 md:gap-6">
         {filteredOrders.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">
             אין הזמנות בקטגוריה זו
