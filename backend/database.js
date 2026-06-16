@@ -71,6 +71,7 @@ function createTables() {
       )
     `, (err) => {
       if (err) console.error('Error creating customers table:', err);
+      else seedCustomers();
     });
 
     // Categories table
@@ -83,6 +84,7 @@ function createTables() {
       )
     `, (err) => {
       if (err) console.error('Error creating categories table:', err);
+      else seedCategories();
     });
 
     // Products table
@@ -101,6 +103,7 @@ function createTables() {
       )
     `, (err) => {
       if (err) console.error('Error creating products table:', err);
+      else seedProducts();
     });
 
     // Orders table
@@ -145,6 +148,75 @@ function createTables() {
     });
 
     console.log('✅ All tables created/verified');
+  });
+}
+
+function seedCustomers() {
+  db.get('SELECT COUNT(*) as count FROM customers', (err, row) => {
+    if (err) return;
+    if (row.count === 0) {
+      const customers = [
+        { customer_number: '1001', customer_name: 'תאיר ע.מ', address: 'רחוב התקווה 10', city: 'תל אביב', phone_1: '03-1234567' },
+        { customer_number: '1002', customer_name: 'קלאים בע"מ', address: 'שדרות רוטשילד 50', city: 'תל אביב', phone_1: '03-9876543' },
+        { customer_number: '1003', customer_name: 'ג\'.כ. משרדים', address: 'רח׳ דיזנגוף 20', city: 'תל אביב', phone_1: '03-5555555' },
+        { customer_number: '1004', customer_name: 'מזכירויות אלופות', address: 'בן יהודה 35', city: 'תל אביב', phone_1: '03-4444444' },
+      ];
+
+      customers.forEach(c => {
+        db.run(
+          'INSERT INTO customers (customer_number, customer_name, address, city, phone_1) VALUES (?, ?, ?, ?, ?)',
+          [c.customer_number, c.customer_name, c.address, c.city, c.phone_1],
+          (err) => {
+            if (!err) console.log(`✅ Added customer: ${c.customer_number}`);
+          }
+        );
+      });
+    }
+  });
+}
+
+function seedCategories() {
+  db.get('SELECT COUNT(*) as count FROM categories', (err, row) => {
+    if (err) return;
+    if (row.count === 0) {
+      const categories = [
+        { name: 'צהריים קלים' },
+        { name: 'סלטים' },
+        { name: 'סנדוויצ\'ים' },
+        { name: 'קינוחים' },
+        { name: 'משקאות' },
+      ];
+
+      categories.forEach(c => {
+        db.run('INSERT INTO categories (name) VALUES (?)', [c.name]);
+      });
+    }
+  });
+}
+
+function seedProducts() {
+  db.get('SELECT COUNT(*) as count FROM products', (err, row) => {
+    if (err) return;
+    if (row.count === 0) {
+      db.get('SELECT id FROM categories LIMIT 1', (err, cat) => {
+        if (err || !cat) return;
+
+        const products = [
+          { item_id: 'P001', name: 'סלט ירוק', price: 25, category_id: cat.id },
+          { item_id: 'P002', name: 'סלט עגבניות', price: 28, category_id: cat.id },
+          { item_id: 'P003', name: 'סנדוויץ\' עוף', price: 35, category_id: cat.id },
+          { item_id: 'P004', name: 'עוגיות שוקולד', price: 15, category_id: cat.id },
+          { item_id: 'P005', name: 'קפה', price: 8, category_id: cat.id },
+        ];
+
+        products.forEach(p => {
+          db.run(
+            'INSERT INTO products (item_id, name, price, category_id) VALUES (?, ?, ?, ?)',
+            [p.item_id, p.name, p.price, p.category_id]
+          );
+        });
+      });
+    }
   });
 }
 
