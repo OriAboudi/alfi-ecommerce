@@ -151,9 +151,16 @@ function createTables() {
 // Helper functions for database operations
 export const runAsync = (sql, params = []) => {
   return new Promise((resolve, reject) => {
-    db.run(sql, params, (err) => {
-      if (err) reject(err);
-      else resolve();
+    db.run(sql, params, function(err) {
+      if (err) {
+        console.error('Database error:', err);
+        reject(err);
+      } else {
+        resolve({
+          id: this.lastID || null,
+          changes: this.changes || 0
+        });
+      }
     });
   });
 };

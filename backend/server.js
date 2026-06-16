@@ -19,17 +19,21 @@ const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:3000';
 
 const app = express();
 
+// CORS Configuration - MUST be first middleware
+app.use(cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200,
+  credentials: false
+}));
+
+// Handle preflight requests explicitly
+app.options('*', cors());
+
 // Middleware - Body Parser
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-// CORS Configuration
-app.use(cors({
-  origin: function(origin, callback) {
-    callback(null, true);  // ✅ Allow all origins
-  },
-  optionsSuccessStatus: 200  // ✅ Important!
-}));
 
 // Request Logging Middleware
 app.use((req, res, next) => {
@@ -37,9 +41,6 @@ app.use((req, res, next) => {
   console.log(`[${timestamp}] ${req.method} ${req.path}`);
   next();
 });
-
-// Initialize database
-initDatabase();
 
 // Root route
 app.get('/', (req, res) => {
@@ -121,34 +122,45 @@ app.use((err, req, res, next) => {
   res.status(statusCode).json(response);
 });
 
-// Start server
-const server = app.listen(PORT, () => {
-  console.log('\n' + '='.repeat(50));
-  console.log('🚀 ח.ס אלפי Server Started');
-  console.log('='.repeat(50));
-  console.log(`📍 Port: ${PORT}`);
-  console.log(`🌐 Environment: ${NODE_ENV}`);
-  console.log(`✅ CORS enabled for: ${FRONTEND_URL}`);
-  console.log(`📊 Database initialized`);
-  console.log(`🔗 API available at http://localhost:${PORT}/api`);
-  console.log('='.repeat(50) + '\n');
-});
+// Start server - Initialize database first
+async function startServer() {
+  try {
+    await initDatabase();
 
-// Handle graceful shutdown
-process.on('SIGTERM', () => {
-  console.log('\n📛 SIGTERM signal received: closing HTTP server');
-  server.close(() => {
-    console.log('✅ HTTP server closed');
-    process.exit(0);
-  });
-});
+    const server = app.listen(PORT, () => {
+      console.log('\n' + '='.repeat(50));
+      console.log('🚀 ח.ס אלפי Server Started');
+      console.log('='.repeat(50));
+      console.log(`📍 Port: ${PORT}`);
+      console.log(`🌐 Environment: ${NODE_ENV}`);
+      console.log(`✅ CORS enabled for: ${FRONTEND_URL}`);
+      console.log(`📊 Database initialized`);
+      console.log(`🔗 API available at http://localhost:${PORT}/api`);
+      console.log('='.repeat(50) + '\n');
+    });
 
-process.on('SIGINT', () => {
-  console.log('\n📛 SIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('✅ HTTP server closed');
-    process.exit(0);
-  });
-});
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('\n📛 SIGTERM signal received: closing HTTP server');
+      server.close(() => {
+        console.log('✅ HTTP server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGINT', () => {
+      console.log('\n📛 SIGINT signal received: closing HTTP server');
+      server.close(() => {
+        console.log('✅ HTTP server closed');
+        process.exit(0);
+      });
+    });
+  } catch (error) {
+    console.error('❌ Failed to start server:', error);
+    process.exit(1);
+  }
+}
+
+startServer();
 
 export default app;
