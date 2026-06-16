@@ -118,10 +118,12 @@ async function createTables() {
 }
 
 async function seedData() {
-  // Check if data already exists
-  const result = await pool.query('SELECT COUNT(*) as count FROM customers');
-  if (result.rows[0].count > 0) {
-    console.log('✅ Database already has data, skipping seed');
+  console.log('📥 Checking if data needs to be loaded...');
+
+  // Check if categories exist (more reliable indicator of full seed)
+  const catResult = await pool.query('SELECT COUNT(*) as count FROM categories');
+  if (catResult.rows[0].count > 0) {
+    console.log('✅ Database already has categories and products, skipping seed');
     return;
   }
 
