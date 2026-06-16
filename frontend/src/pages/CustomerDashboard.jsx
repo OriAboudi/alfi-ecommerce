@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { API_URL } from '../config/api';
 import logo from '../../assets/logo.jpg';
+import ShoppingCart from '../components/ShoppingCart';
 
 // ── Product Card ───────────────────────────────────────────────
 function ProductCard({ product, onAddToCart, onRemoveFromCart, cartQuantity }) {
@@ -485,14 +486,48 @@ export default function CustomerDashboard({ user, onLogout }) {
         </div>
       </main>
 
-      {/* Cart Sidebar Implementation */}
+      {/* Shopping Cart Full Page */}
       {showCart && (
-        <CartSidebar
+        <ShoppingCart
           cartItems={cart}
           onRemove={handleRemoveFromCart}
           onUpdateQuantity={handleUpdateQuantity}
-          onClose={() => setShowCart(false)}
-          user={user}
+          onBack={() => setShowCart(false)}
+          onSubmit={async (formData) => {
+            try {
+              const itemsToSend = cart.map(item => ({
+                productId: item.id,
+                itemId: item.itemId || item.id,
+                productName: item.name,
+                price: parseFloat(item.price),
+                quantity: item.quantity,
+              }));
+              const response = await fetch(`${API_URL}/orders`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  customerId: user.id,
+                  customerNumber: user.customerNumber,
+                  items: itemsToSend,
+                  deliveryDate: formData.deliveryDate,
+                  deliveryTime: formData.deliveryTime,
+                  notes: formData.notes,
+                }),
+              });
+              const data = await response.json();
+              if (response.ok) {
+                alert('ההזמנה נשלחה בהצלחה! 🎉');
+                setShowCart(false);
+                setCart([]);
+              } else {
+                alert(`שגיאה: ${data.error || 'שגיאה בשליחת ההזמנה'}`);
+              }
+            } catch (error) {
+              console.error('Order submission error:', error);
+              alert(`שגיאה בשליחת ההזמנה: ${error.message}`);
+            }
+          }}
+          customerInfo={user}
         />
       )}
     </div>
