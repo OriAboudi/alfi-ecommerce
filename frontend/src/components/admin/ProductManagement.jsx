@@ -13,6 +13,7 @@ export default function ProductManagement() {
     description: ''
   });
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchCategories();
@@ -87,6 +88,11 @@ export default function ProductManagement() {
     return <div className="text-center py-12 text-gray-600">טוען מוצרים...</div>;
   }
 
+  const filteredProducts = products.filter(product =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    product.itemId.includes(searchTerm)
+  );
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
@@ -105,6 +111,18 @@ export default function ProductManagement() {
         >
           {showForm ? '✕ ביטול' : '+ הוסף מוצר'}
         </button>
+      </div>
+
+      {/* Search Bar */}
+      <div>
+        <input
+          type="text"
+          placeholder="חפש מוצר לפי שם או מספר סידור..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right text-base"
+          style={{ fontSize: '16px' }}
+        />
       </div>
 
       {/* Add Product Form */}
@@ -195,12 +213,12 @@ export default function ProductManagement() {
 
       {/* Products Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-2 sm:gap-3 md:gap-6">
-        {products.length === 0 ? (
+        {filteredProducts.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">
-            אין מוצרים להצגה
+            {searchTerm ? 'לא נמצאו מוצרים תואמים' : 'אין מוצרים להצגה'}
           </div>
         ) : (
-          products.map(product => (
+          filteredProducts.map(product => (
             <div
               key={product.id}
               className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-t-blue-500 hover:border-t-blue-600"

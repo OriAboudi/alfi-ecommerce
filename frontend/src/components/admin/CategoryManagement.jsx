@@ -17,6 +17,7 @@ export default function CategoryManagement() {
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({ name: '', description: '' });
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
     fetchCategories();
@@ -79,6 +80,10 @@ export default function CategoryManagement() {
     return CATEGORY_COLORS[index % Object.keys(CATEGORY_COLORS).length];
   };
 
+  const filteredCategories = categories.filter(category =>
+    category.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6">
       {/* Header */}
@@ -97,6 +102,18 @@ export default function CategoryManagement() {
         >
           {showForm ? '✕ ביטול' : '+ הוסף קטגוריה'}
         </button>
+      </div>
+
+      {/* Search Bar */}
+      <div>
+        <input
+          type="text"
+          placeholder="חפש קטגוריה..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none text-right text-base"
+          style={{ fontSize: '16px' }}
+        />
       </div>
 
       {/* Add Category Form */}
@@ -139,12 +156,12 @@ export default function CategoryManagement() {
 
       {/* Categories Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 lg:gap-6">
-        {categories.length === 0 ? (
+        {filteredCategories.length === 0 ? (
           <div className="col-span-full text-center py-12 text-gray-500">
-            אין קטגוריות להצגה
+            {searchTerm ? 'לא נמצאו קטגוריות תואמות' : 'אין קטגוריות להצגה'}
           </div>
         ) : (
-          categories.map((category, index) => {
+          filteredCategories.map((category, index) => {
             const colors = getColorByIndex(index);
             return (
               <div
