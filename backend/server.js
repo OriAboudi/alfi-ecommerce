@@ -3,7 +3,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { initDatabase, getDB } from './database.js';
+import { initDatabase, getDB } from './database-pg.js';
 import customerRoutes from './routes/customers.js';
 import categoryRoutes from './routes/categories.js';
 import productRoutes from './routes/products.js';

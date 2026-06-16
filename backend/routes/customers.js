@@ -1,5 +1,5 @@
 import express from 'express';
-import { allAsync, getAsync } from '../database.js';
+import { allAsync, getAsync } from '../database-pg.js';
 
 const router = express.Router();
 
