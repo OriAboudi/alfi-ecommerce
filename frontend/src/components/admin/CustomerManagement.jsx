@@ -144,6 +144,7 @@ export default function CustomerManagement() {
                   value={formData.customerNumber}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   required
                 />
               </div>
@@ -157,6 +158,7 @@ export default function CustomerManagement() {
                   value={formData.customerName}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   required
                 />
               </div>
@@ -170,6 +172,7 @@ export default function CustomerManagement() {
                   value={formData.address}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
               <div>
@@ -182,6 +185,7 @@ export default function CustomerManagement() {
                   value={formData.city}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
               <div>
@@ -194,6 +198,7 @@ export default function CustomerManagement() {
                   value={formData.zipCode}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
               <div>
@@ -206,6 +211,7 @@ export default function CustomerManagement() {
                   value={formData.phone1}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
               <div>
@@ -218,6 +224,7 @@ export default function CustomerManagement() {
                   value={formData.phone2}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
               <div>
@@ -230,6 +237,7 @@ export default function CustomerManagement() {
                   value={formData.phone3}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                 />
               </div>
             </div>

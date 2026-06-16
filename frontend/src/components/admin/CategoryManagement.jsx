@@ -130,6 +130,7 @@ export default function CategoryManagement() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                style={{ fontSize: '16px' }}
                 required
               />
             </div>
@@ -141,6 +142,7 @@ export default function CategoryManagement() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                style={{ fontSize: '16px' }}
                 rows="3"
               />
             </div>

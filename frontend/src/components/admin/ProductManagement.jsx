@@ -141,6 +141,7 @@ export default function ProductManagement() {
                   value={formData.itemId}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   required
                 />
               </div>
@@ -154,6 +155,7 @@ export default function ProductManagement() {
                   value={formData.name}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   required
                 />
               </div>
@@ -167,6 +169,7 @@ export default function ProductManagement() {
                   value={formData.price}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   step="0.01"
                   required
                 />
@@ -180,6 +183,7 @@ export default function ProductManagement() {
                   value={formData.categoryId}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   required
                 >
                   <option value="">בחר קטגוריה</option>
@@ -197,6 +201,7 @@ export default function ProductManagement() {
                   value={formData.description}
                   onChange={handleInputChange}
                   className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  style={{ fontSize: '16px' }}
                   rows="3"
                 />
               </div>
