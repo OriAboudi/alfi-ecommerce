@@ -48,23 +48,15 @@ export default function ProductManagement() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
     try {
       const response = await fetch(`${API_URL}/admin/products`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
-
       if (response.ok) {
         alert('מוצר נוסף בהצלחה!');
-        setFormData({
-          itemId: '',
-          name: '',
-          price: '',
-          categoryId: '',
-          description: ''
-        });
+        setFormData({ itemId: '', name: '', price: '', categoryId: '', description: '' });
         setShowForm(false);
         fetchProducts();
       } else {
@@ -78,12 +70,10 @@ export default function ProductManagement() {
 
   const handleDelete = async (productId) => {
     if (!confirm('הוא בטוח שברצונך למחוק את המוצר?')) return;
-
     try {
       const response = await fetch(`${API_URL}/admin/products/${productId}`, {
         method: 'DELETE'
       });
-
       if (response.ok) {
         alert('מוצר נמחק בהצלחה!');
         fetchProducts();
@@ -94,112 +84,166 @@ export default function ProductManagement() {
   };
 
   if (loading) {
-    return <div className="text-center py-8">טוען מוצרים...</div>;
+    return <div className="text-center py-12 text-gray-600">טוען מוצרים...</div>;
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">ניהול מוצרים</h2>
+    <div className="w-full max-w-7xl mx-auto px-4 py-6 space-y-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="text-right">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900">ניהול מוצרים</h2>
+          <p className="text-gray-600 mt-1">סה"כ: {products.length} מוצרים</p>
+        </div>
         <button
           onClick={() => setShowForm(!showForm)}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded"
+          className={`w-full sm:w-auto px-6 py-3 rounded-lg font-bold text-white transition-all duration-200 ${
+            showForm
+              ? 'bg-red-600 hover:bg-red-700'
+              : 'bg-green-600 hover:bg-green-700'
+          }`}
         >
           {showForm ? '✕ ביטול' : '+ הוסף מוצר'}
         </button>
       </div>
 
+      {/* Add Product Form */}
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <input
-              type="text"
-              name="itemId"
-              placeholder="מספר סידור *"
-              value={formData.itemId}
-              onChange={handleInputChange}
-              className="border border-gray-300 rounded px-3 py-2"
-              required
-            />
-            <input
-              type="text"
-              name="name"
-              placeholder="שם המוצר *"
-              value={formData.name}
-              onChange={handleInputChange}
-              className="border border-gray-300 rounded px-3 py-2"
-              required
-            />
-            <input
-              type="number"
-              name="price"
-              placeholder="מחיר *"
-              value={formData.price}
-              onChange={handleInputChange}
-              className="border border-gray-300 rounded px-3 py-2"
-              step="0.01"
-              required
-            />
-            <select
-              name="categoryId"
-              value={formData.categoryId}
-              onChange={handleInputChange}
-              className="border border-gray-300 rounded px-3 py-2"
-              required
+        <div className="bg-gradient-to-br from-green-50 to-blue-50 rounded-xl shadow-lg p-6 md:p-8 border border-green-200">
+          <h3 className="text-2xl font-bold text-gray-900 mb-6 text-right">הוסף מוצר חדש</h3>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                  מספר סידור *
+                </label>
+                <input
+                  type="text"
+                  name="itemId"
+                  value={formData.itemId}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                  שם המוצר *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                  מחיר (₪) *
+                </label>
+                <input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  step="0.01"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                  קטגוריה *
+                </label>
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  required
+                >
+                  <option value="">בחר קטגוריה</option>
+                  {categories.map(cat => (
+                    <option key={cat.id} value={cat.id}>{cat.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-semibold text-gray-700 mb-2 text-right">
+                  תיאור (אופציונלי)
+                </label>
+                <textarea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleInputChange}
+                  className="w-full px-4 py-2 border-2 border-gray-300 rounded-lg focus:border-green-500 focus:outline-none text-right"
+                  rows="3"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-lg transition-colors duration-200"
             >
-              <option value="">בחר קטגוריה *</option>
-              {categories.map(cat => (
-                <option key={cat.id} value={cat.id}>{cat.name}</option>
-              ))}
-            </select>
-            <textarea
-              name="description"
-              placeholder="תיאור (אופציונלי)"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="border border-gray-300 rounded px-3 py-2 md:col-span-2"
-              rows="2"
-            />
-          </div>
-          <button
-            type="submit"
-            className="mt-4 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 rounded"
-          >
-            שמור מוצר
-          </button>
-        </form>
+              ✓ שמור מוצר
+            </button>
+          </form>
+        </div>
       )}
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full">
-          <thead className="bg-gray-100 border-b">
-            <tr>
-              <th className="px-6 py-3 text-right font-semibold">מספר סידור</th>
-              <th className="px-6 py-3 text-right font-semibold">שם</th>
-              <th className="px-6 py-3 text-right font-semibold">מחיר</th>
-              <th className="px-6 py-3 text-right font-semibold">קטגוריה</th>
-              <th className="px-6 py-3 text-right font-semibold">פעולות</th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map(product => (
-              <tr key={product.id} className="border-b hover:bg-gray-50">
-                <td className="px-6 py-4 text-right">{product.itemId}</td>
-                <td className="px-6 py-4 text-right">{product.name}</td>
-                <td className="px-6 py-4 text-right">₪{parseFloat(product.price).toFixed(2)}</td>
-                <td className="px-6 py-4 text-right">{product.categoryName}</td>
-                <td className="px-6 py-4 text-right">
-                  <button
-                    onClick={() => handleDelete(product.id)}
-                    className="text-red-600 hover:text-red-800 font-semibold"
-                  >
-                    מחק
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {/* Products Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        {products.length === 0 ? (
+          <div className="col-span-full text-center py-12 text-gray-500">
+            אין מוצרים להצגה
+          </div>
+        ) : (
+          products.map(product => (
+            <div
+              key={product.id}
+              className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden border-t-4 border-t-blue-500 hover:border-t-blue-600"
+            >
+              {/* Card Header */}
+              <div className="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-4">
+                <p className="text-sm font-semibold opacity-90">מספר: {product.itemId}</p>
+                <h3 className="text-xl font-bold mt-1 line-clamp-2">{product.name}</h3>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-4 space-y-3">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">מחיר:</span>
+                  <span className="text-2xl font-bold text-blue-600">
+                    ₪{parseFloat(product.price).toFixed(2)}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">קטגוריה:</span>
+                  <span className="text-sm font-semibold bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
+                    {product.categoryName}
+                  </span>
+                </div>
+                {product.description && (
+                  <div className="text-sm text-gray-600 pt-2 border-t border-gray-200">
+                    <p className="line-clamp-2">{product.description}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Card Footer */}
+              <div className="bg-gray-50 px-4 py-3 border-t border-gray-200">
+                <button
+                  onClick={() => handleDelete(product.id)}
+                  className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-2 rounded-lg transition-colors duration-200"
+                >
+                  🗑️ מחק מוצר
+                </button>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
