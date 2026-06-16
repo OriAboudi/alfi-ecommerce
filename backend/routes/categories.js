@@ -7,7 +7,7 @@ const router = express.Router();
 router.get('/', async (req, res) => {
   try {
     const categories = await allAsync(
-      'SELECT * FROM categories ORDER BY category_name ASC'
+      'SELECT * FROM categories ORDER BY name ASC'
     );
 
     res.json({
@@ -15,7 +15,7 @@ router.get('/', async (req, res) => {
       count: categories.length,
       categories: categories.map(c => ({
         id: c.id,
-        name: c.category_name,
+        name: c.name,
         description: c.description,
         createdAt: c.created_at
       }))
@@ -32,7 +32,7 @@ router.get('/:categoryId', async (req, res) => {
     const { categoryId } = req.params;
 
     const category = await getAsync(
-      'SELECT * FROM categories WHERE id = ?',
+      'SELECT * FROM categories WHERE id = $1',
       [categoryId]
     );
 
@@ -41,18 +41,18 @@ router.get('/:categoryId', async (req, res) => {
     }
 
     const products = await allAsync(
-      'SELECT * FROM products WHERE category_id = ? ORDER BY product_name ASC',
+      'SELECT * FROM products WHERE category_id = $1 ORDER BY name ASC',
       [categoryId]
     );
 
     res.json({
       id: category.id,
-      name: category.category_name,
+      name: category.name,
       description: category.description,
       products: products.map(p => ({
         id: p.id,
         itemId: p.item_id,
-        name: p.product_name,
+        name: p.name,
         price: p.price,
         description: p.description,
         inStock: p.in_stock
@@ -74,7 +74,7 @@ router.post('/', async (req, res) => {
     }
 
     const result = await runAsync(
-      'INSERT INTO categories (category_name, description) VALUES (?, ?)',
+      'INSERT INTO categories (name, description) VALUES (?, ?)',
       [name, description || '']
     );
 
@@ -104,7 +104,7 @@ router.put('/:categoryId', async (req, res) => {
 
     await new Promise((resolve, reject) => {
       db.run(
-        'UPDATE categories SET category_name = ?, description = ? WHERE id = ?',
+        'UPDATE categories SET name = ?, description = ? WHERE id = $1',
         [name, description, categoryId],
         function(err) {
           if (err) reject(err);
@@ -114,7 +114,7 @@ router.put('/:categoryId', async (req, res) => {
     });
 
     const category = await getAsync(
-      'SELECT * FROM categories WHERE id = ?',
+      'SELECT * FROM categories WHERE id = $1',
       [categoryId]
     );
 
@@ -136,7 +136,7 @@ router.delete('/:categoryId', async (req, res) => {
 
     await new Promise((resolve, reject) => {
       db.run(
-        'DELETE FROM categories WHERE id = ?',
+        'DELETE FROM categories WHERE id = $1',
         [categoryId],
         function(err) {
           if (err) reject(err);

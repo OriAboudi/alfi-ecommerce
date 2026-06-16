@@ -13,7 +13,7 @@ router.post('/login', async (req, res) => {
     }
 
     const customer = await getAsync(
-      'SELECT * FROM customers WHERE customer_number = ?',
+      'SELECT * FROM customers WHERE customer_number = $1',
       [customerNumber]
     );
 
@@ -47,7 +47,7 @@ router.get('/:customerId', async (req, res) => {
     const { customerId } = req.params;
 
     const customer = await getAsync(
-      'SELECT * FROM customers WHERE id = ?',
+      'SELECT * FROM customers WHERE id = $1',
       [customerId]
     );
 
@@ -109,7 +109,7 @@ router.put('/:customerId', async (req, res) => {
           address = ?, city = ?, zip_code = ?, 
           phone_1 = ?, phone_2 = ?, phone_3 = ?, 
           updated_at = CURRENT_TIMESTAMP
-         WHERE id = ?`,
+         WHERE id = $1`,
         [address, city, zipCode, phone1, phone2, phone3, customerId],
         function(err) {
           if (err) reject(err);
@@ -119,7 +119,7 @@ router.put('/:customerId', async (req, res) => {
     });
 
     const customer = await getAsync(
-      'SELECT * FROM customers WHERE id = ?',
+      'SELECT * FROM customers WHERE id = $1',
       [customerId]
     );
 

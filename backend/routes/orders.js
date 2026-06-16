@@ -10,7 +10,7 @@ router.get('/customer/:customerId', async (req, res) => {
     const { customerId } = req.params;
 
     const orders = await allAsync(`
-      SELECT * FROM orders WHERE customer_id = ? ORDER BY created_at DESC
+      SELECT * FROM orders WHERE customer_id = $1 ORDER BY created_at DESC
     `, [customerId]);
 
     res.json({
@@ -85,7 +85,7 @@ router.get('/:orderId/details', async (req, res) => {
     const { orderId } = req.params;
 
     const order = await getAsync(
-      'SELECT * FROM orders WHERE id = ?',
+      'SELECT * FROM orders WHERE id = $1',
       [orderId]
     );
 
@@ -94,7 +94,7 @@ router.get('/:orderId/details', async (req, res) => {
     }
 
     const items = await allAsync(
-      'SELECT * FROM order_items WHERE order_id = ?',
+      'SELECT * FROM order_items WHERE order_id = $1',
       [orderId]
     );
 
@@ -113,7 +113,7 @@ router.get('/:orderId/details', async (req, res) => {
       items: items.map(i => ({
         id: i.id,
         itemId: i.item_id,
-        productName: i.product_name,
+        productName: i.name,
         quantity: i.quantity,
         price: parseFloat(i.price),
         subtotal: parseFloat(i.subtotal)
@@ -159,7 +159,7 @@ router.post('/', async (req, res) => {
       const subtotal = parseFloat(item.price) * item.quantity;
       await runAsync(
         `INSERT INTO order_items 
-         (order_id, product_id, item_id, product_name, quantity, price, subtotal) 
+         (order_id, product_id, item_id, name, quantity, price, subtotal) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [orderId, item.productId, item.itemId, item.productName, item.quantity, item.price, subtotal]
       );
@@ -190,7 +190,7 @@ router.put('/:orderId', async (req, res) => {
     const { items, deliveryDate, deliveryTime, notes } = req.body;
 
     // Delete existing order items
-    await runAsync('DELETE FROM order_items WHERE order_id = ?', [orderId]);
+    await runAsync('DELETE FROM order_items WHERE order_id = $1', [orderId]);
 
     // Calculate new total
     let totalAmount = 0;
@@ -202,7 +202,7 @@ router.put('/:orderId', async (req, res) => {
     await runAsync(
       `UPDATE orders 
        SET total_amount = ?, delivery_date = ?, delivery_time = ?, notes = ?, updated_at = CURRENT_TIMESTAMP
-       WHERE id = ?`,
+       WHERE id = $1`,
       [totalAmount, deliveryDate, deliveryTime, notes, orderId]
     );
 
@@ -211,7 +211,7 @@ router.put('/:orderId', async (req, res) => {
       const subtotal = parseFloat(item.price) * item.quantity;
       await runAsync(
         `INSERT INTO order_items 
-         (order_id, product_id, item_id, product_name, quantity, price, subtotal) 
+         (order_id, product_id, item_id, name, quantity, price, subtotal) 
          VALUES (?, ?, ?, ?, ?, ?, ?)`,
         [orderId, item.productId, item.itemId, item.productName, item.quantity, item.price, subtotal]
       );
@@ -234,7 +234,7 @@ router.post('/:orderId/confirm', async (req, res) => {
     const { orderId } = req.params;
 
     await runAsync(
-      `UPDATE orders SET status = 'confirmed', confirmed_at = CURRENT_TIMESTAMP WHERE id = ?`,
+      `UPDATE orders SET status = 'confirmed', confirmed_at = CURRENT_TIMESTAMP WHERE id = $1`,
       [orderId]
     );
 
@@ -253,7 +253,7 @@ router.delete('/:orderId', async (req, res) => {
   try {
     const { orderId } = req.params;
 
-    await runAsync('DELETE FROM orders WHERE id = ?', [orderId]);
+    await runAsync('DELETE FROM orders WHERE id = $1', [orderId]);
 
     res.json({
       success: true,

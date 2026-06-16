@@ -53,7 +53,7 @@ router.delete('/customers/:customerId', async (req, res) => {
   try {
     const { customerId } = req.params;
     
-    await runAsync('DELETE FROM customers WHERE id = ?', [customerId]);
+    await runAsync('DELETE FROM customers WHERE id = $1', [customerId]);
 
     res.json({
       success: true,
@@ -75,7 +75,7 @@ router.get('/categories', async (req, res) => {
       FROM categories c 
       LEFT JOIN products p ON c.id = p.category_id 
       GROUP BY c.id 
-      ORDER BY c.category_name ASC
+      ORDER BY c.name ASC
     `);
 
     res.json({
@@ -83,7 +83,7 @@ router.get('/categories', async (req, res) => {
       count: categories.length,
       categories: categories.map(c => ({
         id: c.id,
-        name: c.category_name,
+        name: c.name,
         description: c.description,
         productCount: c.product_count,
         createdAt: c.created_at
@@ -105,7 +105,7 @@ router.post('/categories', async (req, res) => {
     }
 
     const result = await runAsync(
-      'INSERT INTO categories (category_name, description) VALUES (?, ?)',
+      'INSERT INTO categories (name, description) VALUES (?, ?)',
       [name, description || '']
     );
 
@@ -132,7 +132,7 @@ router.delete('/categories/:categoryId', async (req, res) => {
   try {
     const { categoryId } = req.params;
 
-    await runAsync('DELETE FROM categories WHERE id = ?', [categoryId]);
+    await runAsync('DELETE FROM categories WHERE id = $1', [categoryId]);
 
     res.json({
       success: true,
@@ -150,10 +150,10 @@ router.delete('/categories/:categoryId', async (req, res) => {
 router.get('/products', async (req, res) => {
   try {
     const products = await allAsync(`
-      SELECT p.*, c.category_name 
+      SELECT p.*, c.name 
       FROM products p 
       JOIN categories c ON p.category_id = c.id 
-      ORDER BY p.product_name ASC
+      ORDER BY p.name ASC
     `);
 
     res.json({
@@ -162,10 +162,10 @@ router.get('/products', async (req, res) => {
       products: products.map(p => ({
         id: p.id,
         itemId: p.item_id,
-        name: p.product_name,
+        name: p.name,
         price: parseFloat(p.price),
         categoryId: p.category_id,
-        categoryName: p.category_name,
+        categoryName: p.name,
         description: p.description,
         inStock: p.in_stock,
         createdAt: p.created_at
@@ -190,7 +190,7 @@ router.post('/products', async (req, res) => {
 
     const result = await runAsync(
       `INSERT INTO products 
-       (item_id, product_name, price, category_id, description, in_stock) 
+       (item_id, name, price, category_id, description, in_stock) 
        VALUES (?, ?, ?, ?, ?, 1)`,
       [itemId, name, parseFloat(price), categoryId, description || '']
     );
@@ -221,7 +221,7 @@ router.delete('/products/:productId', async (req, res) => {
   try {
     const { productId } = req.params;
 
-    await runAsync('DELETE FROM products WHERE id = ?', [productId]);
+    await runAsync('DELETE FROM products WHERE id = $1', [productId]);
 
     res.json({
       success: true,
