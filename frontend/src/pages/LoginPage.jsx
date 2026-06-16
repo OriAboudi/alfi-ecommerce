@@ -26,8 +26,8 @@ export default function LoginPage({ onLogin }) {
       if (response.ok && data.customer) {
         onLogin({
           id: data.customer.id,
-          name: data.customer.customer_name,
-          customerNumber: data.customer.customer_number,
+          name: data.customer.name,
+          customerNumber: data.customer.customerNumber,
         }, 'customer');
       } else {
         setError('מספר לקוח לא נמצא');

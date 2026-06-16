@@ -128,12 +128,16 @@ function CartSidebar({ cartItems, onRemove, onUpdateQuantity, onClose, user }) {
           notes,
         }),
       });
+      const data = await response.json();
       if (response.ok) {
         alert('ההזמנה נשלחה בהצלחה! 🎉');
         window.location.href = '/';
+      } else {
+        alert(`שגיאה: ${data.error || 'שגיאה בשליחת ההזמנה'}`);
       }
-    } catch {
-      alert('שגיאה בשליחת ההזמנה');
+    } catch (error) {
+      console.error('Order submission error:', error);
+      alert(`שגיאה בשליחת ההזמנה: ${error.message}`);
     } finally {
       setLoading(false);
     }
@@ -339,10 +343,10 @@ export default function CustomerDashboard({ user, onLogout }) {
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#faf8f5] font-sans antialiased">
-      {/* Navbar - FLEX COLUMN */}
+      {/* Navbar */}
       <header className="bg-white border-b border-brand-100 sticky top-0 z-50 shadow-sm backdrop-blur-md bg-white/95">
-        
-        {/* First Row: Logo, Search, Cart/Logout */}
+
+        {/* Header Row: Logo, Customer Info, Cart/Logout */}
         <div className="flex items-center justify-between gap-4 px-4 sm:px-8 py-4">
           {/* Logo */}
           <div className="flex items-center gap-3 flex-shrink-0">
@@ -353,19 +357,14 @@ export default function CustomerDashboard({ user, onLogout }) {
             </div>
           </div>
 
-          {/* Search Bar - CENTERED */}
-          <div className="flex-1 max-w-sm mx-4">
-            <div className="relative">
-              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-300 text-base pointer-events-none">🔍</span>
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="חפש..."
-                className="w-full pr-9 pl-3 py-2.5 border border-brand-200 rounded-xl text-xs bg-brand-50/50
-                  focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100
-                  transition-all placeholder:text-brand-300"
-              />
+          {/* Customer Info - CLEAN & MINIMAL */}
+          <div className="flex-1 flex justify-center items-center">
+            <div className="flex items-center gap-2">
+              <span className="text-base">👤</span>
+              <span className="text-sm font-black text-brand-900">{user?.name || 'משתמש'}</span>
+              {user?.customerNumber && (
+                <span className="text-xs text-brand-500 font-semibold">({user.customerNumber})</span>
+              )}
             </div>
           </div>
 
@@ -384,7 +383,7 @@ export default function CustomerDashboard({ user, onLogout }) {
                 </span>
               )}
             </button>
-            
+
             <button onClick={onLogout}
               className="px-3 py-2 border border-brand-200 rounded-xl text-xs font-bold
                 text-brand-400 hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 transition-all whitespace-nowrap">
@@ -397,29 +396,65 @@ export default function CustomerDashboard({ user, onLogout }) {
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        {/* Floating / Sticky Carousel Category Strip */}
-        {!searchTerm && (
-          <div className="relative bg-white border border-brand-100 rounded-2xl shadow-sm px-4 py-3.5 sticky top-24 z-40
-            before:absolute before:right-0 before:top-0 before:bottom-0 before:w-8 before:bg-gradient-to-l before:from-white before:to-transparent before:pointer-events-none before:z-10
-            after:absolute after:left-0 after:top-0 after:bottom-0 after:w-8 after:bg-gradient-to-r after:from-white after:to-transparent after:pointer-events-none after:z-10">
-            <div className="flex gap-2 overflow-x-auto scrollbar-hide py-0.5 px-4 mask-gradient layout-scroll snap-x">
-              {categories.map(cat => (
-                <button
-                  key={cat.id}
-                  onClick={() => { setSelectedCategory(cat.id); setSearchTerm(''); }}
-                  className={`flex-shrink-0 px-5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap
-                    border transition-all duration-200 snap-center ${
-                    selectedCategory === cat.id
-                      ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20 scale-102'
-                      : 'bg-brand-50/60 text-brand-700 border-brand-200 hover:bg-brand-100/80 hover:border-brand-300'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
+        {/* Sticky Bar with Search (LEFT) + Categories */}
+        <div className="bg-white border border-brand-100 rounded-2xl shadow-sm sticky top-24 z-40 p-3">
+          <div className="flex gap-3 items-center" style={{ flexDirection: 'row-reverse' }}>
+            {/* Search Bar - VISUALLY LEFT */}
+            <div className="flex-shrink-0 w-44">
+              <div className="relative">
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-brand-300 text-base pointer-events-none">🔍</span>
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="חפש מוצרים..."
+                  className="w-full pr-9 pl-3 py-2.5 border border-brand-200 rounded-lg text-xs bg-brand-50/50
+                    focus:outline-none focus:border-brand-500 focus:bg-white focus:ring-2 focus:ring-brand-100
+                    transition-all placeholder:text-brand-300 font-medium"
+                />
+              </div>
             </div>
+
+            {/* Categories Carousel - VISUALLY RIGHT */}
+            {!searchTerm ? (
+              <div className="flex-1 relative
+                before:absolute before:left-0 before:top-0 before:bottom-0 before:w-6 before:bg-gradient-to-r before:from-white before:to-transparent before:pointer-events-none before:z-10
+                after:absolute after:right-0 after:top-0 after:bottom-0 after:w-6 after:bg-gradient-to-l after:from-white after:to-transparent after:pointer-events-none after:z-10">
+                <div className="flex gap-2 overflow-x-auto scrollbar-hide py-0.5 px-2">
+                  {categories.map(cat => (
+                    <button
+                      key={cat.id}
+                      onClick={() => { setSelectedCategory(cat.id); setSearchTerm(''); }}
+                      className={`flex-shrink-0 px-4 py-2 rounded-lg text-xs sm:text-sm font-bold whitespace-nowrap
+                        border transition-all duration-200 ${
+                        selectedCategory === cat.id
+                          ? 'bg-brand-500 text-white border-brand-500 shadow-md shadow-brand-500/20'
+                          : 'bg-brand-50/60 text-brand-700 border-brand-200 hover:bg-brand-100/80 hover:border-brand-300'
+                      }`}
+                    >
+                      {cat.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="flex-1 text-center text-brand-500 text-sm font-medium py-2">
+                <span>חיפוש עבור: <strong className="text-brand-900">"{searchTerm}"</strong></span>
+              </div>
+            )}
+
+            {/* Clear Search Button */}
+            {searchTerm && (
+              <button
+                onClick={() => setSearchTerm('')}
+                className="flex-shrink-0 px-3 py-2 rounded-lg text-xs font-bold text-brand-400 hover:text-red-600
+                  hover:bg-red-50/50 border border-brand-200 transition-all whitespace-nowrap"
+              >
+                ✕ בטל
+              </button>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Responsive Grid Layout for Products */}
         <div className="py-2">
